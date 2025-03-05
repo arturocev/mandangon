@@ -111,7 +111,7 @@ class PPEstado extends State<PantallaPrincipal> {
               onPressed: () => Navigator.pop(context),
             ),
             TextButton(
-              child: Text("Eliminar", style: TextStyle(color: const Color.fromARGB(255, 143, 124, 122))),
+              child: Text("Eliminar", style: TextStyle(color: Colors.red)),
               onPressed: () {
                 setState(() {
                   listasCompra.removeAt(index);
