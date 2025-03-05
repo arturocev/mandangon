@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'navigation_wrapper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -6,49 +7,12 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'TFG',
-      home: const MyHomePage(title: 'Recetas'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-
-  @override
-  Widget build(BuildContext context) {
-    
-    return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Inicio",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: "Recetas",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant),
-            label: "Restaurantes",
-          ),
-        ],
-        onTap: (index) {
-          // Navegación entre pantallas
-        },
-      ),
+      home: NavigationWrapper(selectedIndex: 1), // Comienza en la pantalla de recetas
     );
   }
 }
