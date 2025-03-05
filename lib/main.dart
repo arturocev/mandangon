@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'restaurantes.dart'; // Importa la pantalla de restaurantes
 
 void main() {
   runApp(const MyApp());
@@ -25,12 +26,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  int _selectedIndex = 0; // Índice para controlar la navegación
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 2) { // Si se presiona "Restaurantes"
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RestaurantesScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -45,9 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
             label: "Restaurantes",
           ),
         ],
-        onTap: (index) {
-          // Navegación entre pantallas
-        },
+        onTap: _onItemTapped,
       ),
     );
   }
