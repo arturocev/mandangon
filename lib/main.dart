@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mandangon/iniciar_sesion.dart';
+import 'package:mandangon/registro.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,7 +32,60 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     
     return Scaffold(
-      
+      /*
+      El body lo hacemos en una columna para hacer un formulario y que todo esté centrado.
+      Dentro de la columna hacemos una fila para cada elemento (imagen y botones).
+      */
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // IMAGEN LOGO MANDANGON
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(padding: EdgeInsets.only(bottom: 20),
+              child: Image(
+                image: AssetImage("assets/images/logo.png"),
+                ),
+              ),
+            ],
+          ),
+          // Boton para ir a la pantalla de iniciar sesión
+          Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 20),
+                    child: 
+                      FloatingActionButton.extended(onPressed: () {
+                         Navigator.push(context, MaterialPageRoute(builder: (context) => IniciarSesion())); // Línea para navegar a la pantalla de inicio de sesión
+                      }, label: Text("Iniciar sesión"),
+                      heroTag: "btn1",),
+                    ),
+                ],
+              ),
+          // Boton para ir a la pantalla de registro
+          Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 20),
+                    child: 
+                      FloatingActionButton.extended(onPressed: () {
+                         Navigator.push(context, MaterialPageRoute(builder: (context) => Registro())); // Línea para navegar a la pantalla de registro
+                      }, 
+                      label: Text("Registrarse"),
+                      heroTag: "btn2",
+                      ),
+                    ),
+                ],
+              ), 
+        ],
+      ),
     );
   }
 }
