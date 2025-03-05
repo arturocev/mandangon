@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'TFG',
-      home: const MyHomePage(title: 'Mandangon'),
+      home: const MyHomePage(title: 'Login'),
     );
   }
 }
@@ -30,25 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Inicio",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: "Recetas",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant),
-            label: "Restaurantes",
-          ),
-        ],
-        onTap: (index) {
-          // Navegación entre pantallas
-        },
-      ),
+      
     );
   }
 }
