@@ -1,65 +1,89 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CrearRecetaScreen extends StatefulWidget {
+  final Map<String, String>? receta;
+
+  const CrearRecetaScreen({super.key, this.receta});
+
   @override
   _CrearRecetaScreenState createState() => _CrearRecetaScreenState();
 }
 
 class _CrearRecetaScreenState extends State<CrearRecetaScreen> {
-  final _tituloController = TextEditingController();
-  final _tipoController = TextEditingController();
-  final _descripcionController = TextEditingController();
-  final _ingredientesController = TextEditingController();
+  late TextEditingController tituloController;
+  late TextEditingController tipoController;
+  late TextEditingController ingredientesController;
+  late TextEditingController instruccionesController;
+
+  @override
+  void initState() {
+    super.initState();
+    tituloController = TextEditingController(text: widget.receta?['titulo'] ?? '');
+    tipoController = TextEditingController(text: widget.receta?['tipo'] ?? '');
+    ingredientesController = TextEditingController(text: widget.receta?['ingredientes'] ?? '');
+    instruccionesController = TextEditingController(text: widget.receta?['instrucciones'] ?? '');
+  }
 
   void _guardarReceta() {
-    if (_tituloController.text.isNotEmpty &&
-        _tipoController.text.isNotEmpty &&
-        _descripcionController.text.isNotEmpty &&
-        _ingredientesController.text.isNotEmpty) {
-      Navigator.pop(context, {
-        'titulo': _tituloController.text,
-        'tipo': _tipoController.text,
-        'descripcion': _descripcionController.text,
-        'ingredientes': _ingredientesController.text,
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Todos los campos son obligatorios')),
-      );
-    }
+    final nuevaReceta = {
+      'titulo': tituloController.text,
+      'tipo': tipoController.text,
+      'ingredientes': ingredientesController.text,
+      'instrucciones': instruccionesController.text,
+    };
+
+    Navigator.pop(context, nuevaReceta);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Añadir Receta')),
+      appBar: AppBar(
+        title: Text(widget.receta == null ? 'Crear Receta' : 'Editar Receta'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text("Título", style: TextStyle(fontSize: 18)),
             TextField(
-              controller: _tituloController,
-              decoration: InputDecoration(labelText: 'Título'),
+              controller: tituloController,
+              decoration: InputDecoration(hintText: "Ejemplo: Tarta de chocolate"),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')) 
+              ],
             ),
+            SizedBox(height: 16),
+            Text("Tipo de Comida", style: TextStyle(fontSize: 18)),
             TextField(
-              controller: _tipoController,
-              decoration: InputDecoration(labelText: 'Tipo de comida'),
+              controller: tipoController,
+              decoration: InputDecoration(hintText: "Ejemplo: Postre"),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')) 
+              ],
             ),
+            SizedBox(height: 16),
+            Text("Ingredientes", style: TextStyle(fontSize: 18)),
             TextField(
-              controller: _descripcionController,
-              decoration: InputDecoration(labelText: 'Descripciones'),
+              controller: ingredientesController,
+              maxLines: 5,  
+              decoration: InputDecoration(hintText: "Ejemplo: 2 huevos, 200g de harina..."),
             ),
+            SizedBox(height: 16),
+            Text("Instrucciones", style: TextStyle(fontSize: 18)),
             TextField(
-              controller: _ingredientesController,
-              decoration: InputDecoration(labelText: 'Ingredientes'),
-              maxLines: 3,
+              controller: instruccionesController,
+              maxLines: 6, 
+              decoration: InputDecoration(hintText: "Escribe los pasos de la receta..."),
             ),
-            SizedBox(
-              height: 20,
-            ),
-            ElevatedButton(
-              onPressed: _guardarReceta,
-              child: Text('Guardar receta'),
+            SizedBox(height: 24),
+            Center(
+              child: ElevatedButton(
+                onPressed: _guardarReceta,
+                child: Text(widget.receta == null ? 'Guardar Receta' : 'Actualizar Receta'),
+              ),
             ),
           ],
         ),

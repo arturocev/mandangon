@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'TFG',
-      home: NavigationWrapper(selectedIndex: 1), // Comienza en la pantalla de recetas
+      home: const NavigationWrapper(selectedIndex: 1), // Comienza en la pantalla de recetas
     );
   }
 }

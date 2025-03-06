@@ -4,7 +4,7 @@ import 'recetas_screen.dart';
 class NavigationWrapper extends StatefulWidget {
   final int selectedIndex;
 
-  const NavigationWrapper({Key? key, required this.selectedIndex}) : super(key: key);
+  const NavigationWrapper({super.key, required this.selectedIndex});
 
   @override
   _NavigationWrapperState createState() => _NavigationWrapperState();
@@ -16,7 +16,7 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   final List<Widget> _screens = [
     Center(child: Text("Pantalla de Inicio")),
     RecetasScreen(),
-    Center(child: Text("Pantalla de Restaurantes")), 
+    Center(child: Text("Pantalla de Restaurantes")),
   ];
 
   @override
@@ -34,15 +34,13 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("")),
-      body: Column(
-        children: [
-          Expanded(child: _screens[_currentIndex]),
-        ],
+      appBar: AppBar(
+        title: Text(["Inicio", "Recetas", "Restaurantes"][_currentIndex]),
       ),
+      body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: "Recetas"),
           BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: "Restaurantes"),
