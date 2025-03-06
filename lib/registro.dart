@@ -39,6 +39,8 @@ class _RegistroState extends State<Registro> {
     controladorEmail = TextEditingController();
     contrasenia = TextEditingController();
     confirmarContrasenia = TextEditingController();
+    esValidoEmail = false;
+    esValidoPass = false;
 
     patronEmail = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"
       r'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-'
@@ -188,7 +190,7 @@ class _RegistroState extends State<Registro> {
                     obscureText: true,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: "Repetir contraseña",
+                    labelText: "Confirmar contraseña",
                   ),
                 ),
                 ),
@@ -212,15 +214,6 @@ class _RegistroState extends State<Registro> {
                       label: Text("Crear cuenta"),
                     ),
                   ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only() 
-                )
               ],
             ),
         ],
