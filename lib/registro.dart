@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:mandangon/main.dart';
 
 class Registro extends StatefulWidget {
@@ -86,8 +87,14 @@ class _RegistroState extends State<Registro> {
     }
   }
 
-  void agregarUsuario() {
-    var url = "package:mandangon/php/conexion.php";
+  void agregarUsuario() async {
+    var url = Uri.parse("http://localhost/conexion.php"); 
+    http.Response respuesta = await http.get(url);
+    if (respuesta.statusCode == 200) {
+      print("Conexion exitosa");
+    } else {
+      print("Conexión fallida");
+    }
   }
 
   @override
