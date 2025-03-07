@@ -88,8 +88,12 @@ class _RegistroState extends State<Registro> {
   }
 
   void agregarUsuario() async {
-    var url = Uri.parse("http://localhost/conexion.php"); 
-    http.Response respuesta = await http.get(url);
+    var url = Uri.parse("http://localhost/conexion.php");
+    http.Response respuesta = await http.post(url, body: {
+      "nombre": controladorNombreCompleto.text,
+      "contrasenia": contrasenia.text,
+      "email": controladorEmail.text
+    });
     if (respuesta.statusCode == 200) {
       print("Conexion exitosa");
     } else {
