@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mandangon/main.dart';
 
 class Registro extends StatefulWidget {
   const Registro({super.key});
@@ -83,6 +84,10 @@ class _RegistroState extends State<Registro> {
     } else {
       return true; // si las contraseñas son iguales, devuelve un true
     }
+  }
+
+  void agregarUsuario() {
+    var url = "package:mandangon/php/conexion.php";
   }
 
   @override
@@ -206,11 +211,18 @@ class _RegistroState extends State<Registro> {
                   padding: EdgeInsets.only(bottom: 20),
                   child: 
                     FloatingActionButton.extended(
-                      onPressed: (
-                      ) {
-                        esValidoEmail = validarEmail(controladorEmail.text);
-                        esValidoPass = validarPassword();
-                      }, 
+                      onPressed: () => !validarEmail(controladorEmail.text) || !validarPassword() ? showDialog(
+                        context: context, 
+                        builder: (BuildContext context) => AlertDialog(
+                          title: Text("Prueba"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context), 
+                              child: Text("Aceptar"),
+                              )
+                          ],
+                        )
+                      ) : agregarUsuario(),
                       label: Text("Crear cuenta"),
                     ),
                   ),
