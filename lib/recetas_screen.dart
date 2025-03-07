@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'crear_receta_screen.dart';
+import 'dart:io';
 
 class RecetasScreen extends StatefulWidget {
   const RecetasScreen({super.key});
@@ -10,13 +11,6 @@ class RecetasScreen extends StatefulWidget {
 
 class _RecetasScreenState extends State<RecetasScreen> {
   List<Map<String, String>> recetas = [];
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  
 
   void _agregarReceta() async {
     final nuevaReceta = await Navigator.push(
@@ -147,9 +141,29 @@ class _RecetasScreenState extends State<RecetasScreen> {
               itemCount: recetas.length,
               itemBuilder: (context, index) {
                 return Card(
+                  color: const Color.fromARGB(255, 124, 10, 10), 
                   child: ListTile(
-                    title: Text(recetas[index]['titulo']!),
-                    subtitle: Text(recetas[index]['tipo']!),
+                    leading: recetas[index]['imagen'] != null
+                        ? Image.file(
+                            File(recetas[index]['imagen']!),
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            width: 50,
+                            height: 50,
+                            color: Colors.grey[300],
+                            child: Icon(Icons.image, color: Colors.grey[700]),
+                          ),
+                    title: Text(
+                      recetas[index]['titulo']!,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      recetas[index]['tipo']!,
+                      style: TextStyle(color: Colors.white70),
+                    ),
                     onTap: () => _mostrarOpciones(index),
                   ),
                 );
