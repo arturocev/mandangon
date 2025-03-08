@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
-import 'crear_receta_screen.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'crear_receta_screen.dart';
 
 class RecetasScreen extends StatefulWidget {
   const RecetasScreen({super.key});
@@ -11,6 +12,11 @@ class RecetasScreen extends StatefulWidget {
 
 class _RecetasScreenState extends State<RecetasScreen> {
   List<Map<String, String>> recetas = [];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _agregarReceta() async {
     final nuevaReceta = await Navigator.push(
@@ -130,32 +136,37 @@ class _RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
+  Widget _mostrarImagen(String? path) {
+    if (path == null || path.isEmpty) {
+      return Container(
+        width: 50,
+        height: 50,
+        color: Colors.grey[300],
+        child: Icon(Icons.image, color: Colors.grey[700]),
+      );
+    }
+
+    if (kIsWeb) {
+      return Image.network(path, width: 50, height: 50, fit: BoxFit.cover);
+    } else {
+      return Image.file(File(path), width: 50, height: 50, fit: BoxFit.cover);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          Image.asset('assets/images/logo.png', height: 100), 
+          Image.asset('assets/images/logo.png', height: 100),
           Expanded(
             child: ListView.builder(
               itemCount: recetas.length,
               itemBuilder: (context, index) {
                 return Card(
-                  color: const Color.fromARGB(255, 124, 10, 10), 
+                  color: const Color.fromARGB(255, 102, 21, 21),
                   child: ListTile(
-                    leading: recetas[index]['imagen'] != null
-                        ? Image.file(
-                            File(recetas[index]['imagen']!),
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            width: 50,
-                            height: 50,
-                            color: Colors.grey[300],
-                            child: Icon(Icons.image, color: Colors.grey[700]),
-                          ),
+                    leading: _mostrarImagen(recetas[index]['imagen']),
                     title: Text(
                       recetas[index]['titulo']!,
                       style: TextStyle(color: Colors.white),
