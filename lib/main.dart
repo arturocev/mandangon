@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'TFG',
       home: const NavigationWrapper(selectedIndex: 1), 
+      debugShowCheckedModeBanner: false,
     );
   }
 }

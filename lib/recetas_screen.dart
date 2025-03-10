@@ -7,10 +7,10 @@ class RecetasScreen extends StatefulWidget {
   const RecetasScreen({super.key});
 
   @override
-  _RecetasScreenState createState() => _RecetasScreenState();
+  RecetasScreenState createState() => RecetasScreenState();
 }
 
-class _RecetasScreenState extends State<RecetasScreen> {
+class RecetasScreenState extends State<RecetasScreen> {
   List<Map<String, String>> recetas = [];
 
   @override
@@ -18,7 +18,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
     super.initState();
   }
 
-  void _agregarReceta() async {
+  void agregarReceta() async {
     final nuevaReceta = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CrearRecetaScreen()),
@@ -31,7 +31,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
     }
   }
 
-  void _mostrarOpciones(int index) {
+  void mostrarOpciones(int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -42,21 +42,21 @@ class _RecetasScreenState extends State<RecetasScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                _editarReceta(index);
+                editarReceta(index);
               },
               child: Text("Editar"),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                _verDescripcion(index);
+                verDescripcion(index);
               },
               child: Text("Ver Descripción"),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                _eliminarReceta(index);
+                eliminarReceta(index);
               },
               child: Text("Eliminar"),
             ),
@@ -66,7 +66,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
-  void _editarReceta(int index) async {
+  void editarReceta(int index) async {
     final recetaEditada = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -81,7 +81,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
     }
   }
 
-  void _verDescripcion(int index) {
+  void verDescripcion(int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -109,7 +109,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
-  void _eliminarReceta(int index) {
+  void eliminarReceta(int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -136,7 +136,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
-  Widget _mostrarImagen(String? path) {
+  Widget mostrarImagen(String? path) {
     if (path == null || path.isEmpty) {
       return Container(
         width: 50,
@@ -166,7 +166,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
                 return Card(
                   color: const Color.fromARGB(255, 102, 21, 21),
                   child: ListTile(
-                    leading: _mostrarImagen(recetas[index]['imagen']),
+                    leading: mostrarImagen(recetas[index]['imagen']),
                     title: Text(
                       recetas[index]['titulo']!,
                       style: TextStyle(color: Colors.white),
@@ -175,7 +175,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
                       recetas[index]['tipo']!,
                       style: TextStyle(color: Colors.white70),
                     ),
-                    onTap: () => _mostrarOpciones(index),
+                    onTap: () => mostrarOpciones(index),
                   ),
                 );
               },
@@ -184,7 +184,7 @@ class _RecetasScreenState extends State<RecetasScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _agregarReceta,
+        onPressed: agregarReceta,
         child: Icon(Icons.add),
       ),
     );

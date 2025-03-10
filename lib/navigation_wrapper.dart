@@ -7,13 +7,13 @@ class NavigationWrapper extends StatefulWidget {
   const NavigationWrapper({super.key, required this.selectedIndex});
 
   @override
-  _NavigationWrapperState createState() => _NavigationWrapperState();
+  NavigationWrapperState createState() => NavigationWrapperState();
 }
 
-class _NavigationWrapperState extends State<NavigationWrapper> {
-  int _currentIndex = 0;
+class NavigationWrapperState extends State<NavigationWrapper> {
+  int currentIndex = 0;
 
-  final List<Widget> _screens = [
+  final List<Widget> screens = [
     Center(child: Text("Pantalla de Inicio")),
     RecetasScreen(),
     Center(child: Text("Pantalla de Restaurantes")),
@@ -22,12 +22,12 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.selectedIndex;
+    currentIndex = widget.selectedIndex;
   }
 
-  void _onTabTapped(int index) {
+  void onTabTapped(int index) {
     setState(() {
-      _currentIndex = index;
+      currentIndex = index;
     });
   }
 
@@ -35,17 +35,17 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(["Inicio", "Recetas", "Restaurantes"][_currentIndex]),
+        title: Text(["Inicio", "Recetas", "Restaurantes"][currentIndex]),
       ),
-      body: _screens[_currentIndex],
+      body: screens[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: "Recetas"),
           BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: "Restaurantes"),
         ],
-        onTap: _onTabTapped,
+        onTap: onTabTapped,
       ),
     );
   }
