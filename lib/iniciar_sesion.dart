@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
 
 class IniciarSesion extends StatefulWidget {
   const IniciarSesion({super.key});
@@ -8,20 +10,35 @@ class IniciarSesion extends StatefulWidget {
 }
 
 class _IniciarSesionState extends State<IniciarSesion>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  with SingleTickerProviderStateMixin {
+  
+  late TextEditingController controladorEmail;
+  late TextEditingController controladorPass;
 
-  @override
   void initState() {
+    controladorEmail = TextEditingController();
+    controladorPass = TextEditingController();
     super.initState();
-    _controller = AnimationController(vsync: this);
+  }
+   
+  void consultarInicioSesion() async {
+
+    final Map<String, String> datos = {
+      "email": controladorEmail.text,
+      "pass": controladorPass.text
+    };
+
+    var url = Uri.parse("http://localhost/consultar_datos.php");
+
+    http.Response consulta = await http.get(url, headers: datos);
+    if (consulta.statusCode == 200) {
+      print("Conexión exitosa");
+    } else {
+      print("Conexión fallida");
+    }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +74,7 @@ class _IniciarSesionState extends State<IniciarSesion>
                 child: SizedBox(
                   width: 300,
                   child: TextField(
+                  controller: controladorEmail,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Email",
@@ -76,6 +94,7 @@ class _IniciarSesionState extends State<IniciarSesion>
                 child: SizedBox(
                   width: 300,
                   child: TextField(
+                    controller: controladorPass,
                     obscureText: true,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -95,7 +114,9 @@ class _IniciarSesionState extends State<IniciarSesion>
                   padding: EdgeInsets.only(bottom: 20),
                   child: 
                     FloatingActionButton.extended(
-                      onPressed: () {}, 
+                      onPressed: () {
+                        consultarInicioSesion();
+                      }, 
                       label: Text("Iniciar sesión"),
                     ),
                   ),

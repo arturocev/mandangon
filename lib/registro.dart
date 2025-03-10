@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:mandangon/main.dart';
 
 class Registro extends StatefulWidget {
   const Registro({super.key});
@@ -87,17 +86,20 @@ class _RegistroState extends State<Registro> {
     }
   }
 
+  // Método asíncrono que realizamos para insertar los datos del usuario a la base de datos
   void agregarUsuario() async {
-    var url = Uri.parse("http://localhost/conexion.php");
+    var url = Uri.parse("http://localhost/insertar_datos.php"); // Aquí insertamos en una variable la url donde se encuentra el archivo .php
+
+    // Llamamos a la url y le pasamos al archivo .php los parámetros de nombre, contrasenia y email
     http.Response respuesta = await http.post(url, body: {
       "nombre": controladorNombreCompleto.text,
       "contrasenia": contrasenia.text,
       "email": controladorEmail.text
     });
     if (respuesta.statusCode == 200) {
-      print("Conexion exitosa");
+      print("Conexion exitosa"); // Si todo ha ido bien, se meterá aquí
     } else {
-      print("Conexión fallida");
+      print("Conexión fallida"); // Si algo ha ido mal, se meterá aquí
     }
   }
 
@@ -222,10 +224,12 @@ class _RegistroState extends State<Registro> {
                   padding: EdgeInsets.only(bottom: 20),
                   child: 
                     FloatingActionButton.extended(
+                      // si validarEmail devuelve un false o validarPassword devuelve un false, se ejecutará un showDialog
                       onPressed: () => !validarEmail(controladorEmail.text) || !validarPassword() ? showDialog(
                         context: context, 
                         builder: (BuildContext context) => AlertDialog(
-                          title: Text("Prueba"),
+                          title: Text("Datos Incorrectos"),
+                          content: Text("Aseguráte de escribir un email correcto y de que la contraseña contenga: una mayúscula, una minúscula, un número y mínimo 8 caracteres"),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context), 
@@ -233,7 +237,7 @@ class _RegistroState extends State<Registro> {
                               )
                           ],
                         )
-                      ) : agregarUsuario(),
+                      ) : agregarUsuario(), // si validarEmail y validarPassword devuelven un true, se ejecutará la función agregarUsuario
                       label: Text("Crear cuenta"),
                     ),
                   ),
