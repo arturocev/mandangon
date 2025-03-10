@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import necesario para usar los filtros de entrada
+// Import necesario para usar los filtros de entrada
 import 'package:http/http.dart' as http;
 
 class LCScreen extends StatefulWidget {
@@ -47,57 +46,63 @@ class LCEstado extends State<LCScreen> {
       productos.removeAt(index);
     });
   }
-
 void confirmarLista() async {
   String nombre = nombreController.text.trim();
-  String productosString = productos.join(", "); // Convertir lista a string separado por comas
 
-  print("1. Confirmando lista con nombre: $nombre y productos: $productosString");
+  // Depuración: Verificar el id_list antes de enviar la solicitud
+  print("ID de la lista antes de enviar: ${widget.lista["id_list"]}");
+  print("Nombre de la lista: $nombre");
+  print("Productos: $productos");
 
   try {
-    // Enviar los datos en formato JSON
     final response = await http.post(
       Uri.parse('http://localhost/mandangon/guardar_lista.php'),
       headers: {
-        'Content-Type': 'application/json', // Asegúrate de enviar el contenido como JSON
+        'Content-Type': 'application/json',
       },
       body: jsonEncode({
+        'id_list': widget.lista["id_list"] ?? 0, // Asegúrate de enviar el id_list correcto
         'nombre': nombre,
-        'productos': productos, // Enviar la lista de productos directamente (no como string)
+        'productos': productos, // Enviar la lista de productos
       }),
     );
 
-    print("2. Respuesta recibida: ${response.statusCode}");
-    print("3. Respuesta del servidor: ${response.body}");
+    // Depuración: Verificar la respuesta del servidor
+    print("Respuesta del servidor: ${response.body}");
+    print("Código de estado: ${response.statusCode}");
 
     if (response.statusCode == 200) {
-      if (response.body.contains("Lista guardada correctamente")) {
-        print("4. Lista guardada correctamente.");
+      // Parsear la respuesta JSON
+      final responseData = json.decode(response.body);
+
+      // Verificar el estado en la respuesta JSON
+      if (responseData["status"] == "success") {
         widget.onConfirm(nombre, productos);
         if (mounted) {
           Navigator.pop(context);
         }
       } else {
-        print("5. La respuesta del servidor no es la esperada: ${response.body}");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Error al guardar la lista. Intente de nuevo.")),
         );
       }
     } else {
-      print("6. Error al guardar la lista. Código de estado: ${response.statusCode}");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error al guardar la lista. Intente de nuevo.")),
       );
     }
   } catch (e) {
-    print("7. Error en la solicitud HTTP: $e");
+    // Depuración: Capturar errores de conexión
+    print("Error en la solicitud HTTP: $e");
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("No se pudo conectar con el servidor.")),
     );
   }
 }
-
-
+  
+  
+  
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
