@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ajustes.dart';
+import 'perfil.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,8 +12,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Mandangon',
-      home: const MyHomePage(title: 'Mandangon'),
+      home: const MyHomePage(title: ''),
     );
   }
 }
@@ -27,8 +29,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
-  bool _showSettings = false;
-
   static const List<Widget> _pages = <Widget>[
     Center(child: Text('Inicio')),
     Center(child: Text('Recetas')),
@@ -38,39 +38,40 @@ class _MyHomePageState extends State<MyHomePage> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _showSettings = false;
     });
   }
 
-  void _toggleSettings() {
-    setState(() {
-      _showSettings = !_showSettings;
-    });
+  void _navigateToSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AjustesScreen()),
+    );
+  }
+
+  void _navigateToProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PerfilScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: _showSettings
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _toggleSettings,
-              )
-            : null,
-        title: _showSettings ? null : Text(widget.title),
-        actions: _showSettings
-            ? []
-            : [
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: _toggleSettings,
-                ),
-              ],
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: _navigateToProfile,
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _navigateToSettings,
+          ),
+        ],
       ),
-      body: _showSettings
-          ? AjustesScreen(onClose: _toggleSettings)
-          : _pages[_selectedIndex],
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
