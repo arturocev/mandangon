@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
@@ -14,30 +15,33 @@ class _IniciarSesionState extends State<IniciarSesion>
   
   late TextEditingController controladorEmail;
   late TextEditingController controladorPass;
+  late bool inicioSesion;
 
   void initState() {
     controladorEmail = TextEditingController();
     controladorPass = TextEditingController();
+    inicioSesion = false;
     super.initState();
   }
    
   void consultarInicioSesion() async {
 
-    final Map<String, String> datos = {
-      "email": controladorEmail.text,
-      "pass": controladorPass.text
-    };
+    var url = Uri.parse("http://localhost/consultar_datos.php?email=${controladorEmail.text}&pass=${controladorPass.text}");
 
-    var url = Uri.parse("http://localhost/consultar_datos.php");
-
-    http.Response consulta = await http.get(url, headers: datos);
+    http.Response consulta = await http.get(url);
     if (consulta.statusCode == 200) {
-      print("Conexión exitosa");
+      final json = jsonEncode(consulta.body);
+      final respuesta = jsonDecode(json);
+      if (respuesta.toString().contains("true")) {
+        inicioSesion = true;
+      } else {
+        inicioSesion = false;
+      }
+      
     } else {
       print("Conexión fallida");
     }
   }
-
 
 
   @override
@@ -116,6 +120,7 @@ class _IniciarSesionState extends State<IniciarSesion>
                     FloatingActionButton.extended(
                       onPressed: () {
                         consultarInicioSesion();
+                        print(inicioSesion);
                       }, 
                       label: Text("Iniciar sesión"),
                     ),
