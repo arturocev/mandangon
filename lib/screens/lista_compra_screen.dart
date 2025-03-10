@@ -1,10 +1,15 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Import necesario para usar los filtros de entrada
+import 'package:http/http.dart' as http;
 
 class LCScreen extends StatefulWidget {
   final bool editable;
-  final Map<String, dynamic> lista; // Recibe la lista desde PantallaPrincipal
+  final Map<String, dynamic> lista;
   final Function(String, List<String>) onConfirm;
-  
+
   const LCScreen({super.key, required this.editable, required this.lista, required this.onConfirm});
 
   @override
@@ -24,88 +29,124 @@ class LCEstado extends State<LCScreen> {
   }
 
   void agregarProducto() {
-    if (productoController.text.isNotEmpty) {
-      setState(() {
-        productos.add(productoController.text);
-        productoController.clear();
-      });
+    String producto = productoController.text.trim();
+
+    if (producto.isEmpty) {
+      return;
     }
+
+    setState(() {
+      productos.add(producto);
+      productoController.clear();
+    });
   }
 
-  void confirmarLista() {
-    widget.onConfirm(nombreController.text, productos);
-    Navigator.pop(context);
+  // 🗑 Función para eliminar un producto
+  void eliminarProducto(int index) {
+    setState(() {
+      productos.removeAt(index);
+    });
   }
+
+void confirmarLista() async {
+  String nombre = nombreController.text.trim();
+  String productosString = productos.join(", "); // Convertir lista a string separado por comas
+
+  print("1. Confirmando lista con nombre: $nombre y productos: $productosString");
+
+  try {
+    // Enviar los datos en formato JSON
+    final response = await http.post(
+      Uri.parse('http://localhost/mandangon/guardar_lista.php'),
+      headers: {
+        'Content-Type': 'application/json', // Asegúrate de enviar el contenido como JSON
+      },
+      body: jsonEncode({
+        'nombre': nombre,
+        'productos': productos, // Enviar la lista de productos directamente (no como string)
+      }),
+    );
+
+    print("2. Respuesta recibida: ${response.statusCode}");
+    print("3. Respuesta del servidor: ${response.body}");
+
+    if (response.statusCode == 200) {
+      if (response.body.contains("Lista guardada correctamente")) {
+        print("4. Lista guardada correctamente.");
+        widget.onConfirm(nombre, productos);
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      } else {
+        print("5. La respuesta del servidor no es la esperada: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error al guardar la lista. Intente de nuevo.")),
+        );
+      }
+    } else {
+      print("6. Error al guardar la lista. Código de estado: ${response.statusCode}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error al guardar la lista. Intente de nuevo.")),
+      );
+    }
+  } catch (e) {
+    print("7. Error en la solicitud HTTP: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("No se pudo conectar con el servidor.")),
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.brown),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: const Text("Lista de Compras"),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Image.asset("assets/logo.png", height: 80)),
-            SizedBox(height: 20),
-            Text("NOMBRE", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown)),
             TextField(
               controller: nombreController,
-              enabled: widget.editable,
+              decoration: const InputDecoration(labelText: "Nombre de la Lista"),
+              style: const TextStyle(fontSize: 18),
             ),
-            SizedBox(height: 20),
-            Text("PRODUCTOS", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown)),
-            // Mostrar los productos, siempre que existan, en ambas modalidades
+            const SizedBox(height: 20),
+            if (widget.editable)
+              TextField(
+                controller: productoController,
+                decoration: const InputDecoration(labelText: "Producto"),
+                onSubmitted: (_) => agregarProducto(),
+              ),
+            const SizedBox(height: 20),
+            if (widget.editable)
+              ElevatedButton(
+                onPressed: agregarProducto,
+                child: const Text("Agregar Producto"),
+              ),
+            const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: productos.length,
                 itemBuilder: (context, index) {
                   return ListTile(
                     title: Text(productos[index]),
+                    trailing: widget.editable
+                        ? IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => eliminarProducto(index),
+                          )
+                        : null,
                   );
                 },
               ),
             ),
-            // Solo mostrar la barra de texto y el botón si es editable
             if (widget.editable)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0), // Añadí un pequeño margen para separar
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: productoController,
-                        decoration: InputDecoration(
-                          hintText: 'Añadir producto...',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.add_circle, color: Colors.green),
-                      onPressed: agregarProducto,
-                    ),
-                  ],
-                ),
-              ),
-            // Solo mostrar el botón de confirmar si es editable
-            if (widget.editable)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0), // Separar el botón de la barra de texto
-                child: Center(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                    onPressed: confirmarLista,
-                    child: Text("CONFIRMAR", style: TextStyle(color: Colors.white)),
-                  ),
-                ),
+              ElevatedButton(
+                onPressed: confirmarLista,
+                child: const Text("Guardar Lista"),
               ),
           ],
         ),
