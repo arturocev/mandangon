@@ -12,37 +12,38 @@ class IniciarSesion extends StatefulWidget {
 
 class _IniciarSesionState extends State<IniciarSesion>
   with SingleTickerProviderStateMixin {
-  
-  late TextEditingController controladorEmail;
-  late TextEditingController controladorPass;
-  late bool inicioSesion;
 
+  
+  // --------------- VARIABLES GLOBALES -----------------
+  late TextEditingController controladorEmail; // controlador para el campo de texto del email
+  late TextEditingController controladorPass; // controlador para el campo de texto de la contraseña
+
+  // Método para inicializar las variables
   void initState() {
     controladorEmail = TextEditingController();
     controladorPass = TextEditingController();
-    inicioSesion = false;
     super.initState();
   }
-   
-  void consultarInicioSesion() async {
+  
+  // Método asíncrono que devuelve un booleano para consultar los datos que introduce el usuario al iniciar sesión
+  Future<bool> consultarInicioSesion() async {
 
     var url = Uri.parse("http://localhost/consultar_datos.php?email=${controladorEmail.text}&pass=${controladorPass.text}");
 
     http.Response consulta = await http.get(url);
     if (consulta.statusCode == 200) {
-      final json = jsonEncode(consulta.body);
-      final respuesta = jsonDecode(json);
+      final json = jsonEncode(consulta.body); //Convertimos en un json lo que devuelve el código php
+      final respuesta = jsonDecode(json); // En una variable, decodificamos el json
       if (respuesta.toString().contains("true")) {
-        inicioSesion = true;
+        return true; // si la variable respuesta devuelve "true", devolveremos un true desde donde se ha llamado a este método
       } else {
-        inicioSesion = false;
+        return false; // si la variable respuesta devuelve "false", devolveremos un false desde donde se ha llamado a este método
       }
-      
     } else {
       print("Conexión fallida");
+      return false;
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -118,9 +119,24 @@ class _IniciarSesionState extends State<IniciarSesion>
                   padding: EdgeInsets.only(bottom: 20),
                   child: 
                     FloatingActionButton.extended(
-                      onPressed: () {
-                        consultarInicioSesion();
-                        print(inicioSesion);
+                      onPressed: () async { // Al presionar el botón, lo hacemos asíncrono para que se actualice el booleano que devuelve el método "consultarInicioSesion"
+                        if (await consultarInicioSesion() == false) { // Si devuelve un false el método, mostrará un cuadro de diálogo
+                            showDialog(
+                            context: context, 
+                            builder: (BuildContext context) => AlertDialog(
+                              title: Text("Datos Incorrectos"),
+                              content: Text("Asegúrate de que el usuario ya esté registrado"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context), 
+                                  child: Text("Aceptar"),
+                                  )
+                              ],
+                            )
+                          );
+                        } else { // Si devuelve un true el método, mostrará este print
+                          print("Datos coincidentes");
+                        }
                       }, 
                       label: Text("Iniciar sesión"),
                     ),
