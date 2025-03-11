@@ -19,6 +19,7 @@ class _RegistroState extends State<Registro> {
   late TextEditingController controladorEmail;
   late TextEditingController contrasenia;
   late TextEditingController confirmarContrasenia;
+ 
 
   // -------- Variables de los patrones de la contraseña y el email ---------------
   late String patronEmail;
@@ -31,6 +32,8 @@ class _RegistroState extends State<Registro> {
   // -------- Variables boleanas del email y contraseña
   late bool esValidoEmail;
   late bool esValidoPass;
+  late bool ocultarPass; // variable booleana para cambiar el valor de obscuretext en el campo de texto de la contraseña
+  late Icon iconoPass; // Icono de visibilidad de la contraseña
 
   // -------- Método para inicializar las variables
 
@@ -40,6 +43,8 @@ class _RegistroState extends State<Registro> {
     controladorEmail = TextEditingController();
     contrasenia = TextEditingController();
     confirmarContrasenia = TextEditingController();
+    ocultarPass = true;
+    iconoPass = Icon(Icons.visibility);
     esValidoEmail = false;
     esValidoPass = false;
 
@@ -184,10 +189,23 @@ class _RegistroState extends State<Registro> {
                   child: TextField(
                     controller: contrasenia,
                     maxLength: 12,
-                    obscureText: true,
+                    obscureText: ocultarPass,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Contraseña",
+                    suffixIcon: IconButton(onPressed: () { // Si presiona en el icono, cambiará el valor de la visibilidad de contraseña y el icono
+                      setState(() {
+                        if (ocultarPass) {
+                          ocultarPass = false;
+                          iconoPass = Icon(Icons.visibility_off);
+                        }
+                        else 
+                        {
+                          ocultarPass = true;
+                          iconoPass = Icon(Icons.visibility);
+                        }
+                      });
+                    }, icon: iconoPass,),
                   ),
                 ),
                 ),
@@ -205,10 +223,21 @@ class _RegistroState extends State<Registro> {
                   width: 300,
                   child: TextField(
                     controller: confirmarContrasenia,
-                    obscureText: true,
+                    obscureText: ocultarPass,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Confirmar contraseña",
+                    suffixIcon: IconButton(onPressed: () { // Si presiona en el icono, cambiará el valor de la visibilidad de contraseña y el icono
+                      setState(() {
+                        if (ocultarPass) {
+                          ocultarPass = false;
+                          iconoPass = Icon(Icons.visibility_off);
+                        } else {
+                          ocultarPass = true;
+                          iconoPass = Icon(Icons.visibility);
+                        }
+                      });
+                    }, icon: iconoPass)
                   ),
                 ),
                 ),
