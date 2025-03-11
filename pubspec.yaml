@@ -28,5 +28,18 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
-    - assets/perfil.png
-    - assets/ajustes.png
+    - assets/fondo1.png
+    - assets/fondo2.png
+    - assets/fondo3.png
+    - assets/fondo4.png
+    - assets/fondo5.png
+    - assets/fondo6.png
+    - assets/fondo7.png
+    - assets/fondo8.png
+    - assets/fondo9.png
+    - assets/fondo10.png
+    - assets/fondo11.png
+    - assets/fondo12.png
+    - assets/fondo13.png
+    - assets/fondo14.png
+    - assets/fondo15.png
