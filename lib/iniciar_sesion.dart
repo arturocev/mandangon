@@ -17,11 +17,15 @@ class _IniciarSesionState extends State<IniciarSesion>
   // --------------- VARIABLES GLOBALES -----------------
   late TextEditingController controladorEmail; // controlador para el campo de texto del email
   late TextEditingController controladorPass; // controlador para el campo de texto de la contraseña
+  late bool ocultarPass; // variable booleana para cambiar el valor de obscuretext en el campo de texto de la contraseña
+  late Icon iconoPass; // Icono de visibilidad de la contraseña
 
   // Método para inicializar las variables
   void initState() {
     controladorEmail = TextEditingController();
     controladorPass = TextEditingController();
+    ocultarPass = true;
+    iconoPass = Icon(Icons.visibility);
     super.initState();
   }
   
@@ -100,10 +104,22 @@ class _IniciarSesionState extends State<IniciarSesion>
                   width: 300,
                   child: TextField(
                     controller: controladorPass,
-                    obscureText: true,
+                    obscureText: ocultarPass,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Contraseña",
+                    suffixIcon: IconButton(onPressed: () { // Si presiona en el icono, cambiará el valor de la visibilidad de contraseña y el icono
+                      setState(() {
+                        if (ocultarPass) {
+                          ocultarPass = false;
+                          iconoPass = Icon(Icons.visibility_off);
+                        } else {
+                          ocultarPass = true;
+                          iconoPass = Icon(Icons.visibility);
+                        } 
+                      });
+                    }, icon: iconoPass
+                    ),
                   ),
                 ),
                 ),
