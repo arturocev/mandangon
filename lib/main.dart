@@ -1,8 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'screens/lista_compra_screen.dart';
+import 'metodos_lc/get_lc.dart';
+import 'metodos_lc/aniadir_lc.dart';
+import 'metodos_lc/opciones_lc.dart';
 
 void main() {
   runApp(MandangonApp());
@@ -14,13 +13,13 @@ class MandangonApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: PantallaPrincipal(),
+      debugShowCheckedModeBanner: false, // Eliminar banner.
+      home: PantallaPrincipal(), // Establece PantallaPrincipal.
     );
   }
 }
 
-class PantallaPrincipal extends StatefulWidget {
+class PantallaPrincipal extends StatefulWidget { 
   const PantallaPrincipal({super.key});
 
   @override
@@ -28,381 +27,86 @@ class PantallaPrincipal extends StatefulWidget {
 }
 
 class PPEstado extends State<PantallaPrincipal> {
-  List<Map<String, dynamic>> listasCompra = [];
+  List<Map<String, dynamic>> listasCompra = []; // Lista que almacenará las listas de compras.
 
   @override
   void initState() {
     super.initState();
-    obtenerListasCompra(); // Cargar las listas desde el servidor
-  }
-
-void masListaCompra() async {
-  // Crear una nueva lista en el estado local
-  final nuevaLista = {
-    "id_list": DateTime.now().millisecondsSinceEpoch, // Generar un ID único
-    "nombre": "Nueva Lista",
-    "productos": [],
-  };
-
-  setState(() {
-    listasCompra.add(nuevaLista);
-  });
-
-  // Enviar la nueva lista al servidor para guardarla en la base de datos
-  try {
-    final response = await http.post(
-      Uri.parse('http://localhost/mandangon/guardar_lista.php'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'id_list': 0, // ID 0 indica que es una nueva lista
-        'nombre': nuevaLista["nombre"],
-        'productos': nuevaLista["productos"],
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      // Parsear la respuesta JSON
-      final responseData = json.decode(response.body);
-
-      if (responseData["status"] == "success") {
-        // Actualizar el id_list de la lista con el ID generado por el servidor
-        setState(() {
-          nuevaLista["id_list"] = responseData["id_list"]; // Asignar el ID generado por el servidor
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Lista creada correctamente")),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error al crear la lista. Intente de nuevo.")),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al crear la lista. Intente de nuevo.")),
-      );
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("No se pudo conectar con el servidor.")),
-    );
-  }
-}
-  void mostrarOpcionesLista(BuildContext context, int index) {
-    final lista = listasCompra[index];
-
-    // Depuración: Verificar el id_list de la lista seleccionada
-    print("ID de la lista seleccionada: ${lista["id_list"]}");
-    print("Nombre de la lista seleccionada: ${lista["nombre"]}");
-    print("Productos de la lista seleccionada: ${lista["productos"]}");
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Opciones de Lista"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: const Text("Editar"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LCScreen(
-                        editable: true,
-                        lista: {
-                          "id_list": lista["id_list"], // Pasar el id_list correctamente
-                          "nombre": lista["nombre"],
-                          "productos": lista["productos"],
-                        },
-                        onConfirm: (nombre, productos) {
-                          setState(() {
-                            listasCompra[index]["nombre"] = nombre;
-                            listasCompra[index]["productos"] = productos;
-                          });
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                title: const Text("Ver"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LCScreen(
-                        editable: false,
-                        lista: {
-                          "id_list": lista["id_list"], // Pasar el id_list correctamente
-                          "nombre": lista["nombre"],
-                          "productos": lista["productos"],
-                        },
-                        onConfirm: (nombre, productos) {},
-                      ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                title: const Text("Eliminar"),
-                onTap: () {
-                  Navigator.pop(context);
-                  confirmarEliminacion(context, index);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-void confirmarEliminacion(BuildContext context, int index) {
-  final lista = listasCompra[index];
-
-  // Convertir el id_list a int
-  final idList = int.tryParse(lista["id_list"].toString()) ?? 0;
-
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text("¿Eliminar lista?"),
-        content: const Text("¿Estás seguro de que quieres eliminar esta lista?"),
-        actions: [
-          TextButton(
-            child: const Text("Cancelar"),
-            onPressed: () => Navigator.pop(context), // Cerrar el diálogo sin hacer nada
-          ),
-          TextButton(
-            child: const Text("Eliminar", style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              // Eliminar la lista de la base de datos
-              eliminarListaCompra(idList);
-
-              // Eliminar la lista del estado local
-              setState(() {
-                listasCompra.removeAt(index);
-              });
-
-              // Cerrar el diálogo
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-Future<void> eliminarListaCompra(int idList) async {
-  if (kDebugMode) {
-    print("1. Intentando eliminar la lista con ID: $idList");
-  }
-
-  try {
-    final response = await http.post(
-      Uri.parse('http://localhost/mandangon/eliminar_lista.php'),
-      body: {
-        'id_list': idList.toString(), // Enviar el id_list como parámetro
-      },
-    );
-
-    if (kDebugMode) {
-      print("2. Respuesta recibida de eliminación: ${response.statusCode}");
-    }
-
-    if (response.statusCode == 200) {
-      if (kDebugMode) {
-        print("3. Lista eliminada con éxito.");
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Lista eliminada exitosamente")),
-      );
-    } else {
-      if (kDebugMode) {
-        print("4. Error: Respuesta inesperada al eliminar.");
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al eliminar la lista")),
-      );
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print("5. Error al conectar con el servidor: $e");
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Error al conectar con el servidor")),
-    );
-  }
-}
-Future<void> obtenerListasCompra() async {
-  if (kDebugMode) {
-    print("1. Intentando obtener listas de compra...");
-  }
-
-  try {
-    final response = await http.get(Uri.parse('http://localhost/mandangon/obtener_listas.php'));
-
-    if (kDebugMode) {
-      print("2. Respuesta recibida: ${response.statusCode}");
-    }
-
-    if (response.statusCode == 200) {
-      if (kDebugMode) {
-        print("3. Respuesta del servidor: ${response.body}");
-      }
-      List<dynamic> listas = json.decode(response.body);
-
-      setState(() {
-        listasCompra = listas.map((lista) {
-          return {
-            'id_list': int.tryParse(lista['id_list'].toString()) ?? 0, // Convertir a int
-            'nombre': lista['nombre'],
-            'productos': List<String>.from(lista['productos']),
-          };
-        }).toList();
-      });
-
-      if (kDebugMode) {
-        print("4. Listas de compra cargadas con éxito.");
-      }
-    } else {
-      if (kDebugMode) {
-        print("5. Error: Respuesta inesperada del servidor.");
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al cargar las listas. Intente de nuevo.")),
-      );
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print("6. Error al conectar con el servidor: $e");
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Error al conectar con el servidor.")),
-    );
-  }
-} // Función para actualizar lista de compra
-  Future<void> actualizarListaCompra(int id, String nuevoNombre) async {
-    if (kDebugMode) {
-      print("1. Intentando actualizar la lista con ID: $id y nuevo nombre: $nuevoNombre");
-    }
-
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost/mandangon/guardar_lista.php'),
-        headers: <String, String>{
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: {
-          'id': id.toString(),
-          'nombre': nuevoNombre,
-        },
-      );
-
-      if (kDebugMode) {
-        print("2. Respuesta recibida de actualización: ${response.statusCode}");
-      }
-
-      if (response.statusCode == 200) {
-        if (kDebugMode) {
-          print("3. Lista actualizada con éxito.");
-        }
-        setState(() {
-          listasCompra = listasCompra.map((lista) {
-            if (lista['id_list'] == id) {
-              lista['nombre'] = nuevoNombre; // Actualiza el nombre
-            }
-            return lista;
-          }).toList();
-        });
-      } else {
-        if (kDebugMode) {
-          print("4. Error: Respuesta inesperada al actualizar.");
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error al actualizar la lista")),
-        );
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print("5. Error al conectar con el servidor: $e");
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al conectar con el servidor")),
-      );
-    }
+    // Llama al método para obtener las listas de compra. 
+    // Pasa el contexto, la lista de compras y el método setState.
+    obtenerListasCompra(context, listasCompra, setState);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        toolbarHeight: 70,
+        backgroundColor: Colors.transparent, // Hace el fondo del AppBar transparente.
+        elevation: 0, // Elimina la sombra del AppBar.
+        toolbarHeight: 70, // Ajusta la altura del AppBar.
         actions: [
+          // Iconos de acción en el AppBar.
           IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {},
+            icon: const Icon(Icons.person), // Icono de perfil de usuario.
+            onPressed: () {}, // Acción al presionar el icono de perfil (vacío por ahora).
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {},
+            icon: const Icon(Icons.settings), // Icono de configuración.
+            onPressed: () {}, // Acción al presionar el icono de configuración (vacío por ahora).
           ),
         ],
       ),
       body: Column(
         children: [
-          Center(child: Image.asset("assets/logo.png", height: 80)),
-          const SizedBox(height: 20),
+          Center(child: Image.asset("assets/logo.png", height: 80)), // Muestra un logo en el centro.
+          const SizedBox(height: 20), // Espacio entre el logo y el resto de los widgets.
           Expanded(
             child: listasCompra.isEmpty
-                ? const Center(child: Text("No hay listas de compra"))
+                ? const Center(child: Text("No hay listas de compra")) // Mensaje cuando no hay listas de compra.
                 : ListView.builder(
-                    itemCount: listasCompra.length,
+                    itemCount: listasCompra.length, // Cuenta las listas de compra.
                     itemBuilder: (context, index) {
-                      final lista = listasCompra[index];
+                      final lista = listasCompra[index]; // Obtiene cada lista de compra.
+                      // Función para convertir un color hexadecimal a un color de Flutter.
+                      Color parseColor(String colorHex) {
+                        return Color(int.parse(colorHex.replaceAll("#", "0xFF")));
+                      }
+
+                      final colorLista = parseColor(lista["list_color"] ?? "#FFFFFF"); // Color de fondo para cada lista.
+
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15), // Espaciado alrededor de cada elemento de la lista.
                         child: Align(
-                          alignment: Alignment.center,
+                          alignment: Alignment.center, // Alinea el contenedor al centro.
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Padding dentro del contenedor.
                             decoration: BoxDecoration(
-                              color: const Color.fromRGBO(255, 208, 208, 1),
-                              borderRadius: BorderRadius.circular(12),
+                              color: colorLista, // Color de fondo de la lista.
+                              borderRadius: BorderRadius.circular(12), // Bordes redondeados.
                               boxShadow: const [
                                 BoxShadow(
-                                  color: Colors.black,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
+                                  color: Colors.black, // Sombra negra.
+                                  blurRadius: 4, // Difusión de la sombra.
+                                  offset: Offset(0, 2), // Desplazamiento de la sombra.
                                 ),
                               ],
                             ),
                             child: InkWell(
-                              onTap: () => mostrarOpcionesLista(context, index),
+                              onTap: () => mostrarOpcionesLista(
+                                  context, index, listasCompra, setState), // Acción al hacer clic en una lista.
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0), // Espaciado interno.
                                 child: Text(
-                                  lista["nombre"],
+                                  lista["nombre"], // Muestra el nombre de la lista de compra.
                                   style: const TextStyle(
-                                    fontFamily: 'DancingScript',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.brown,
+                                    fontFamily: 'DancingScript', // Fuente personalizada.
+                                    fontSize: 18, // Tamaño de fuente.
+                                    fontWeight: FontWeight.bold, // Peso de la fuente.
+                                    color: Colors.brown, // Color del texto.
                                   ),
-                                  textAlign: TextAlign.center,
-                                  softWrap: true,
-                                  maxLines: 2,
+                                  textAlign: TextAlign.center, // Centra el texto.
+                                  softWrap: true, // Permite que el texto se ajuste.
+                                  maxLines: 2, // Máximo de dos líneas para el texto.
                                 ),
                               ),
                             ),
@@ -412,12 +116,13 @@ Future<void> obtenerListasCompra() async {
                     },
                   ),
           ),
-          if (listasCompra.length < 25)
+          if (listasCompra.length < 25) // Verifica si hay menos de 25 listas de compra.
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10), // Espaciado alrededor del botón.
               child: IconButton(
-                icon: const Icon(Icons.add_circle, size: 50, color: Colors.brown),
-                onPressed: masListaCompra,
+                icon: const Icon(Icons.add_circle, size: 50, color: Colors.brown), // Icono de añadir nueva lista.
+                onPressed: () =>
+                    masListaCompra(context, listasCompra, setState), // Acción para añadir una nueva lista.
               ),
             ),
         ],
@@ -425,19 +130,19 @@ Future<void> obtenerListasCompra() async {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Inicio",
+            icon: Icon(Icons.home), // Icono de inicio.
+            label: "Inicio", // Etiqueta de la primera opción.
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: "Recetas",
+            icon: Icon(Icons.menu_book), // Icono de recetas.
+            label: "Recetas", // Etiqueta de la segunda opción.
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant),
-            label: "Restaurantes",
+            icon: Icon(Icons.restaurant), // Icono de restaurantes.
+            label: "Restaurantes", // Etiqueta de la tercera opción.
           ),
         ],
-        onTap: (index) {},
+        onTap: (index) {}, // Acción cuando se toca un ítem de la barra de navegación (vacío por ahora).
       ),
     );
   }
