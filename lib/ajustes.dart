@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart'; // Import para debugPrint
 
 class AjustesScreen extends StatefulWidget {
   final int userId; // ID del usuario
@@ -16,6 +17,12 @@ class _AjustesScreenState extends State<AjustesScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
+  void logMessage(String message) {
+    if (kDebugMode) {
+      debugPrint(message); // Solo imprime en modo debug
+    }
+  }
+
   void _toggleChangePassword() {
     _newPasswordController.clear();
     _confirmPasswordController.clear();
@@ -29,49 +36,56 @@ class _AjustesScreenState extends State<AjustesScreen> {
     String confirmPassword = _confirmPasswordController.text;
 
     if (newPassword.length < 8 || newPassword.length > 12) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("La contraseña debe tener entre 8 y 12 caracteres.")),
-      );
+      _showMessage("La contraseña debe tener entre 8 y 12 caracteres.");
       return;
     }
     if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Las contraseñas no coinciden.")),
-      );
+      _showMessage("Las contraseñas no coinciden.");
       return;
     }
 
     var response = await http.post(
-      Uri.parse('https://tudominio.com/cambiar_contrasena.php'),
+      Uri.parse('https://192.168.126.80/cambiar_contrasena.php'),
       body: {
         'id_usu': widget.userId.toString(),
         'new_password': newPassword,
       },
     );
 
+    if (!mounted) return; // Evita usar context si la pantalla cambió
+
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Contraseña actualizada con éxito.")),
-      );
+      _showMessage("Contraseña actualizada con éxito.");
       _toggleChangePassword();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al actualizar la contraseña.")),
-      );
+      _showMessage("Error al actualizar la contraseña.");
+    }
+  }
+
+  void _showMessage(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
   void _showTermsAndPrivacy(String title, String content) {
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
         content: SingleChildScrollView(
-            child: Text(content, textAlign: TextAlign.justify)),
+          child: Text(content, textAlign: TextAlign.justify),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+            },
             child: const Text("Cerrar"),
           ),
         ],
@@ -86,7 +100,9 @@ class _AjustesScreenState extends State<AjustesScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            if (mounted) {
+              Navigator.pop(context);
+            }
           },
         ),
         title: const Text("Ajustes"),
@@ -215,10 +231,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Cuenta eliminada")),
-                              );
+                              _showMessage("Cuenta eliminada");
                             },
                             child: const Text("Confirmar"),
                           ),
@@ -232,9 +245,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
                   leading: const Icon(Icons.logout, color: Colors.blue),
                   title: const Text("Cerrar sesión"),
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Se ha cerrado la sesión")),
-                    );
+                    _showMessage("Se ha cerrado la sesión");
                   },
                 ),
               ],

@@ -20,6 +20,10 @@ dependencies:
   # Para enviar la imagen al servidor
   http: ^0.13.6
 
+
+  mime: ^1.0.4
+  http_parser: ^4.0.0
+
   # Agrega aquí otras dependencias necesarias
 
 dev_dependencies:

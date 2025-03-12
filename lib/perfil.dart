@@ -3,19 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path;
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 
 class PerfilScreen extends StatefulWidget {
-  final int userId; // ID del usuario
-  final String usuario; // Nombre del usuario
+  final int userId;
+  final String usuarios;
 
-  const PerfilScreen({Key? key, required this.userId, required this.usuario})
-      : super(key: key);
+  const PerfilScreen({super.key, required this.userId, required this.usuarios});
 
   @override
-  _PerfilScreenState createState() => _PerfilScreenState();
+  State<PerfilScreen> createState() => _PerfilScreenState();
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
@@ -31,7 +29,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
         _image = selectedImage;
       });
 
-      // Subir la imagen al servidor
       await _uploadImage(File(_image!.path));
     }
   }
@@ -39,25 +36,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> _uploadImage(File imageFile) async {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('https://localhost/guardar_foto.php'),
+      Uri.parse('https://192.168.126.80/guardar_foto.php'),
     );
 
-    // Agregar el ID del usuario
     request.fields['id_usu'] = widget.userId.toString();
 
-    // Detectar el tipo MIME del archivo
     String mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+    var mimeTypeSplit = mimeType.split('/');
 
-    // Agregar la imagen al request
     request.files.add(
       await http.MultipartFile.fromPath(
         'image',
         imageFile.path,
-        contentType: MediaType.parse(mimeType),
+        contentType: MediaType(mimeTypeSplit[0], mimeTypeSplit[1]),
       ),
     );
 
-    // Enviar la petición al servidor
     var response = await request.send();
 
     if (response.statusCode == 200) {
@@ -102,7 +96,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              widget.usuario.isNotEmpty ? widget.usuario : "Sin usuario",
+              widget.usuarios.isNotEmpty ? widget.usuarios : "Sin usuario",
               style: const TextStyle(fontSize: 16),
             ),
           ],

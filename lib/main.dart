@@ -11,17 +11,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mandangon',
-      home: const MyHomePage(title: ''),
+      home: MyHomePage(title: ''),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
   final String title;
+
+  const MyHomePage({super.key, required this.title});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -29,6 +30,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+
   static const List<Widget> _pages = <Widget>[
     Center(child: Text('Inicio')),
     Center(child: Text('Recetas')),
@@ -44,14 +46,19 @@ class _MyHomePageState extends State<MyHomePage> {
   void _navigateToSettings() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const AjustesScreen()),
+      MaterialPageRoute(
+        builder: (context) => const AjustesScreen(userId: 1),
+      ),
     );
   }
 
   void _navigateToProfile() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const PerfilScreen()),
+      MaterialPageRoute(
+        builder: (context) =>
+            const PerfilScreen(userId: 1, usuarios: 'Usuario'),
+      ),
     );
   }
 
