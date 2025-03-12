@@ -4,7 +4,9 @@ import '../metodos_lc/aniadir_lc.dart';
 import '../metodos_lc/opciones_lc.dart';
 
 class PantallaPrincipal extends StatefulWidget {
-  const PantallaPrincipal({super.key});
+  final int usuarioId; // Parámetro para recibir el ID del usuario
+
+  const PantallaPrincipal({super.key, required this.usuarioId}); // Constructor que recibe el ID del usuario
 
   @override
   PPEstado createState() => PPEstado();
@@ -19,7 +21,7 @@ class PPEstado extends State<PantallaPrincipal> {
     super.initState();
     // Llama al método para obtener las listas de compra.
     // Pasa el contexto, la lista de compras y el método setState.
-    obtenerListasCompra(context, listasCompra, setState);
+    obtenerListasCompra(context, listasCompra, setState, widget.usuarioId);
   }
 
   // Función para convertir un color hexadecimal a un color de Flutter
@@ -119,7 +121,7 @@ class PPEstado extends State<PantallaPrincipal> {
                           final lista = listasCompra[
                               index]; // Obtiene cada lista de compra.
 
-                          final colorLista = parseColor(lista["list_color"] ??
+                          final colorLista = parseColor(lista["color"] ??
                               "#FFCCCBB"); // Color de fondo para cada lista.
 
                           return Padding(
@@ -154,7 +156,8 @@ class PPEstado extends State<PantallaPrincipal> {
                                       context,
                                       index,
                                       listasCompra,
-                                      setState), // Acción al hacer clic en una lista.
+                                      setState,
+                                      widget.usuarioId), // Acción al hacer clic en una lista.
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8.0), // Espaciado interno.
@@ -195,8 +198,7 @@ class PPEstado extends State<PantallaPrincipal> {
                         size: 50,
                         color: Color.fromARGB(
                             255, 0, 0, 0)), // Icono de añadir nueva lista.
-                    onPressed: () => nuevaLC(context, listasCompra,
-                        setState), // Acción para añadir una nueva lista.
+                    onPressed: () => nuevaLC(context, listasCompra, setState, widget.usuarioId), // Acción para añadir una nueva lista.
                   ),
                 ),
             ],

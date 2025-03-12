@@ -29,56 +29,83 @@ class _IniciarSesionState extends State<IniciarSesion>
     super.initState();
   }
 
-  // Método asíncrono que devuelve un booleano para consultar los datos que introduce el usuario al iniciar sesión
-  Future<bool> consultarInicioSesion() async {
-    var url = Uri.parse(
-        "http://localhost/mandangon/consultar_datos.php?email=${controladorEmail.text}&pass=${controladorPass.text}");
+Future<int?> consultarInicioSesion() async {
+  var url = Uri.parse(
+      "http://localhost/mandangon/consultar_datos.php?email=${controladorEmail.text}&pass=${controladorPass.text}");
 
-    if (kDebugMode) {
-      print("URL de consulta: $url"); // Imprime la URL de consulta
-    }
-
-    http.Response consulta = await http.get(url);
-
-    if (kDebugMode) {
-      print("Código de estado de la respuesta: ${consulta.statusCode}"); // Imprime el código de estado
-      print("Respuesta del servidor: ${consulta.body}"); // Imprime la respuesta del servidor
-    }
-
-    if (consulta.statusCode == 200) {
-      final json = jsonEncode(consulta.body); // Convertimos en un json lo que devuelve el código php
-      final respuesta = jsonDecode(json); // En una variable, decodificamos el json
-
-      if (kDebugMode) {
-        print("Respuesta decodificada: $respuesta"); // Imprime la respuesta decodificada
-      }
-
-      if (respuesta.toString().contains("true")) {
-        if (kDebugMode) {
-          print("Inicio de sesión exitoso"); // Imprime si el inicio de sesión fue exitoso
-        }
-        return true; // si la variable respuesta devuelve "true", devolveremos un true desde donde se ha llamado a este método
-      } else {
-        if (kDebugMode) {
-          print("Inicio de sesión fallido: Credenciales incorrectas"); // Imprime si las credenciales son incorrectas
-        }
-        return false; // si la variable respuesta devuelve "false", devolveremos un false desde donde se ha llamado a este método
-      }
-    } else {
-      if (kDebugMode) {
-        print("Conexión fallida: ${consulta.statusCode}"); // Imprime si la conexión falló
-      }
-      return false;
-    }
+  if (kDebugMode) {
+    print("URL de consulta: $url");
   }
 
+  http.Response consulta = await http.get(url);
+
+  if (kDebugMode) {
+    print("Código de estado de la respuesta: ${consulta.statusCode}");
+    print("Respuesta del servidor: ${consulta.body}");
+  }
+
+  if (consulta.statusCode == 200) {
+    try {
+      // Intentamos decodificar la respuesta como JSON
+      final respuesta = jsonDecode(consulta.body);
+
+      if (respuesta['error'] == true) {
+        // Si el campo 'error' es verdadero, mostramos el mensaje de error
+        if (kDebugMode) {
+          print("Error en la respuesta del servidor: ${respuesta['mensaje']}");
+        }
+
+        // Mostramos el mensaje de error en un cuadro de diálogo o en la UI
+        showDialog(
+          // ignore: use_build_context_synchronously
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text("Error de Inicio de Sesión"),
+            content: Text(respuesta['mensaje']),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Aceptar"),
+              ),
+            ],
+          ),
+        );
+
+        return null;  // Si hay un error (usuario no encontrado), devolvemos null.
+      } else {
+        // Si no hay error, obtenemos el ID del usuario
+        final usuarioId = int.tryParse(respuesta['id'].toString());  // Convertimos la respuesta 'id' a entero.
+        if (usuarioId != null) {
+          return usuarioId;  // Devolvemos el ID como entero.
+        } else {
+          if (kDebugMode) {
+            print("Error: El ID recibido no es un número válido.");
+          }
+          return null;  // Si no se puede convertir el ID a entero, devolvemos null.
+        }
+      }
+    } catch (e) {
+      // Si no podemos decodificar la respuesta como JSON, mostramos el error
+      if (kDebugMode) {
+        print("Error al procesar la respuesta: $e");
+      }
+      return null;  // Si hay un error al procesar la respuesta, devolvemos null.
+    }
+  } else {
+    if (kDebugMode) {
+      print("Conexión fallida: ${consulta.statusCode}");
+    }
+    return null;  // Si la conexión falla, devolvemos null.
+  }
+}
+
+ 
+ 
+ 
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      /*
-      El body lo hacemos en una columna para hacer un formulario y que todo esté centrado.
-      Dentro de la columna hacemos una fila para cada elemento (imagen, campos de texto y botones).
-      */
       appBar: AppBar(),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -162,45 +189,37 @@ class _IniciarSesionState extends State<IniciarSesion>
                 padding: const EdgeInsets.only(bottom: 20),
                 child: FloatingActionButton.extended(
                   onPressed: () async {
-                    // Al presionar el botón, lo hacemos asíncrono para que se actualice el booleano que devuelve el método "consultarInicioSesion"
-                    if (kDebugMode) {
-                      print("Botón de inicio de sesión presionado"); // Imprime cuando se presiona el botón
-                    }
+  if (kDebugMode) {
+    print("Botón de inicio de sesión presionado");
+  }
 
-                    if (await consultarInicioSesion() == false) {
-                      // Si devuelve un false el método, mostrará un cuadro de diálogo
-                      if (kDebugMode) {
-                        print("Mostrando diálogo de error"); // Imprime antes de mostrar el diálogo
-                      }
+  int? usuarioId = await consultarInicioSesion();
 
-                      showDialog(
-                        // ignore: use_build_context_synchronously
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text("Datos Incorrectos"),
-                          content: const Text(
-                              "Asegúrate de que el usuario ya esté registrado"),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Aceptar"),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      // Si devuelve un true el método, redirige a la pantalla de inicio
-                      if (kDebugMode) {
-                        print("Datos coincidentes"); // Imprime si las credenciales son correctas
-                      }
-                      Navigator.pushReplacement(
-                        // ignore: use_build_context_synchronously
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PantallaPrincipal()), // Redirige a inicio.dart
-                      );
-                    }
-                  },
+  if (usuarioId == null) {
+    showDialog(
+      // ignore: use_build_context_synchronously
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text("Datos Incorrectos"),
+        content: const Text("Asegúrate de que el usuario ya esté registrado"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Aceptar"),
+          ),
+        ],
+      ),
+    );
+  } else {
+    Navigator.pushReplacement(
+      // ignore: use_build_context_synchronously
+      context,
+      MaterialPageRoute(
+        builder: (context) => PantallaPrincipal(usuarioId: usuarioId),  // Pasamos el usuarioId
+      ),
+    );
+  }
+},
                   label: const Text("Iniciar sesión"),
                 ),
               ),

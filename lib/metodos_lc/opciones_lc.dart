@@ -6,8 +6,13 @@ import 'package:mandangon/metodos_lc/color_lc.dart';
 import '../screens/lista_compra.dart';
 
 // Muestra un cuadro de diálogo con opciones para editar, ver, cambiar color o eliminar una lista de compra.
-void mostrarOpcionesLista(BuildContext context, int index,
-    List<Map<String, dynamic>> listasCompra, StateSetter setState) {
+void mostrarOpcionesLista(
+    BuildContext context,
+    int index,
+    List<Map<String, dynamic>> listasCompra,
+    StateSetter setState,
+    int usuarioId  // Se agrega el parámetro requerido
+    ) {
   final lista = listasCompra[index]; // Obtener la lista seleccionada.
 
   if (kDebugMode) {
@@ -16,49 +21,45 @@ void mostrarOpcionesLista(BuildContext context, int index,
     print("Productos de la lista seleccionada: ${lista["productos"]}");
   }
 
-  // Mostrar un cuadro de diálogo con las opciones disponibles para la lista seleccionada.
+  // Mostrar un cuadro de diálogo con las opciones disponibles.
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text("Opciones de Lista"),
         content: Column(
-          mainAxisSize: MainAxisSize
-              .min, // Ajustar el tamaño del contenido al mínimo necesario
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Opción de editar la lista
+            // Opción de editar la lista.
             ListTile(
               title: const Text("Editar"),
               onTap: () {
-                // Navegar a la pantalla de edición
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => LCScreen(
                       editable: true,
                       lista: {
-                        "id_list": lista[
-                            "id_list"], // Pasar la lista con todos sus datos
+                        "id_list": lista["id_list"],
                         "nombre": lista["nombre"],
                         "productos": lista["productos"],
                       },
                       onConfirm: (nombre, productos) {
-                        // Al confirmar los cambios, actualizamos el estado local
                         setState(() {
                           listasCompra[index]["nombre"] = nombre;
                           listasCompra[index]["productos"] = productos;
                         });
                       },
+                      usuarioId: usuarioId, // Se pasa el usuarioId
                     ),
                   ),
                 );
               },
             ),
-            // Opción para ver los detalles de la lista (sin editar)
+            // Opción para ver la lista sin editar.
             ListTile(
               title: const Text("Ver"),
               onTap: () {
-                // Navegar a la pantalla de solo vista
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -70,27 +71,26 @@ void mostrarOpcionesLista(BuildContext context, int index,
                         "productos": lista["productos"],
                       },
                       onConfirm: (nombre, productos) {},
+                      usuarioId: usuarioId, // Se pasa el usuarioId
                     ),
                   ),
                 );
               },
             ),
-            // Opción para cambiar el color de la lista
+            // Opción para cambiar el color de la lista.
             ListTile(
               title: const Text("Cambiar Color"),
               onTap: () {
-                Navigator.pop(context); // Cerrar el cuadro de diálogo actual
-                eligeColor(context, index, listasCompra,
-                    setState); // Mostrar selector de color
+                Navigator.pop(context);
+                eligeColor(context, index, listasCompra, setState);
               },
             ),
-            // Opción para eliminar la lista
+            // Opción para eliminar la lista.
             ListTile(
               title: const Text("Eliminar"),
               onTap: () {
-                Navigator.pop(context); // Cerrar el cuadro de diálogo actual
-                confirmarEliminacion(context, index, listasCompra,
-                    setState); // Confirmar eliminación
+                Navigator.pop(context);
+                confirmarEliminacion(context, index, listasCompra, setState);
               },
             ),
           ],
@@ -100,16 +100,15 @@ void mostrarOpcionesLista(BuildContext context, int index,
   );
 }
 
-// Función para convertir un color hexadecimal a un Color de Flutter
+// Función para convertir un color hexadecimal a un Color de Flutter.
 Color converHexa(String colorHex) {
   if (colorHex.isEmpty || colorHex[0] != '#') {
-    return Color(
-        0xFFFFFFFF); // Retorna blanco por defecto si el formato es incorrecto
+    return const Color(0xFFFFFFFF); // Blanco por defecto.
   }
   return Color(int.parse(colorHex.replaceAll("#", "0xFF")));
 }
 
-// Muestra un cuadro de diálogo con opciones para cambiar el color de una lista
+// Muestra un cuadro de diálogo para cambiar el color de la lista.
 void eligeColor(BuildContext context, int index,
     List<Map<String, dynamic>> listasCompra, Function(Function()) setState) {
   Color currentColor =
@@ -122,20 +121,20 @@ void eligeColor(BuildContext context, int index,
         title: const Text("Selecciona un color"),
         content: SingleChildScrollView(
           child: ColorPicker(
-            pickerColor: currentColor, // Color actual
+            pickerColor: currentColor,
             onColorChanged: (Color color) {
-              currentColor = color; // Actualizar el color seleccionado
+              currentColor = color;
             },
             // ignore: deprecated_member_use
-            showLabel: true, // Mostrar etiquetas de colores
-            pickerAreaHeightPercent: 0.8, // Altura del área del selector
+            showLabel: true,
+            pickerAreaHeightPercent: 0.8,
           ),
         ),
         actions: [
           TextButton(
             child: const Text("Cancelar"),
             onPressed: () {
-              Navigator.pop(context); // Cerrar el cuadro de diálogo sin guardar
+              Navigator.pop(context);
             },
           ),
           TextButton(
@@ -145,16 +144,15 @@ void eligeColor(BuildContext context, int index,
                   // ignore: deprecated_member_use
                   "#${currentColor.value.toRadixString(16).substring(2, 8)}";
 
-              // Actualizar el color en el estado de la lista localmente
               setState(() {
-                listasCompra[index]["list_color"] = nuevoColor; // Actualizamos el color en la lista
+                listasCompra[index]["color"] = nuevoColor;
               });
 
-              // Actualizar el color en la base de datos
-              await actualizarColorLista(context, listasCompra[index]["id_list"], nuevoColor);
+              await actualizarColorLista(
+                  context, listasCompra[index]["id_list"], nuevoColor);
 
               // ignore: use_build_context_synchronously
-              Navigator.pop(context); // Cerrar el cuadro de diálogo
+              Navigator.pop(context);
             },
           ),
         ],

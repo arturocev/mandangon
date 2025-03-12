@@ -1,68 +1,93 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:path/path.dart';
 
-Future<void> actualizarListaCompra(int id, String nuevoNombre,
-    List<Map<String, dynamic>> listasCompra, StateSetter setState) async {
-  
-  // Verificar si estamos en modo de depuración (debug) y mostrar un mensaje con los datos.
+Future<void> actualizarListaCompra(
+    int idLista,
+    String nuevoNombre,
+    List<Map<String, dynamic>> listasCompra,
+    StateSetter setState,
+    int usuarioId, // Este valor debe provenir del usuario que inició sesión
+    List<String> productos
+) async {
+  // Imprime todos los valores antes de enviarlos para asegurarnos de que están completos
   if (kDebugMode) {
-    print(
-        "1. Intentando actualizar la lista con ID: $id y nuevo nombre: $nuevoNombre");
+    print("DEBUG: idLista: $idLista");
+    print("DEBUG: nuevoNombre: $nuevoNombre");
+    print("DEBUG: usuarioId: $usuarioId");
+    print("DEBUG: productos (original): $productos");
+  }
+
+  // Filtrar productos vacíos (por si acaso)
+  final productosLimpiados = productos.where((p) => p.trim().isNotEmpty).toList();
+  if (kDebugMode) {
+    print("DEBUG: productosLimpiados: $productosLimpiados");
+  }
+
+  // Construir el cuerpo de la petición
+  final bodyData = {
+    'id_list': idLista.toString(),
+    'nombre': nuevoNombre,
+    'productos': jsonEncode(productosLimpiados),
+    'usuario_id': usuarioId.toString(),
+  };
+
+  if (kDebugMode) {
+    print("DEBUG: Body enviado: ${jsonEncode(bodyData)}");
   }
 
   try {
-    // Enviar la solicitud POST para actualizar la lista de compras al servidor.
     final response = await http.post(
-      Uri.parse('http://localhost/mandangon/guardar_lista.php'), // URL del servidor.
-      headers: <String, String>{
-        'Content-Type': 'application/x-www-form-urlencoded', // Tipo de contenido.
-      },
-      body: {
-        'id': id.toString(), // ID de la lista que queremos actualizar.
-        'nombre': nuevoNombre, // Nuevo nombre para la lista.
-      },
+      Uri.parse('http://localhost/mandangon/guardar_lista.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(bodyData),
     );
 
-    // Verificar si estamos en modo de depuración y mostrar el código de estado de la respuesta.
     if (kDebugMode) {
-      print("2. Respuesta recibida de actualización: ${response.statusCode}");
+      print("DEBUG: Respuesta HTTP: ${response.statusCode}");
+      print("DEBUG: Respuesta: ${response.body}");
     }
 
-    // Si la respuesta tiene un código de estado 200, la actualización fue exitosa.
     if (response.statusCode == 200) {
-      if (kDebugMode) {
-        print("3. Lista actualizada con éxito.");
-      }
-
-      // Si la actualización fue exitosa, actualizar la lista local en la UI.
-      setState(() {
-        listasCompra = listasCompra.map((lista) {
-          if (lista['id_list'] == id) {
-            lista['nombre'] = nuevoNombre; // Actualizar el nombre de la lista.
+      final responseData = json.decode(response.body);
+      if (responseData["status"] == "success") {
+        if (kDebugMode) {
+          print("DEBUG: Lista actualizada con éxito.");
+        }
+        setState(() {
+          for (var lista in listasCompra) {
+            if (lista['id_list'] == idLista) {
+              lista['nombre'] = nuevoNombre;
+              lista['productos'] = productosLimpiados;
+            }
           }
-          return lista;
-        }).toList();
-      });
-    } else {
-      // Si la respuesta tiene un código diferente a 200, mostrar un error.
-      if (kDebugMode) {
-        print("4. Error: Respuesta inesperada al actualizar.");
+        });
+        ScaffoldMessenger.of(context as BuildContext).showSnackBar(
+          const SnackBar(content: Text("Lista actualizada correctamente")),
+        );
+      } else {
+        if (kDebugMode) {
+          print("DEBUG: Error del servidor: ${responseData["message"]}");
+        }
+        ScaffoldMessenger.of(context as BuildContext).showSnackBar(
+          SnackBar(content: Text("Error: ${responseData["message"]}")),
+        );
       }
-
-      // Mostrar un mensaje de error en la pantalla.
+    } else {
+      if (kDebugMode) {
+        print("DEBUG: Respuesta inesperada del servidor.");
+      }
       ScaffoldMessenger.of(context as BuildContext).showSnackBar(
         const SnackBar(content: Text("Error al actualizar la lista")),
       );
     }
   } catch (e) {
-    // Si ocurre un error al conectar con el servidor, mostrar un mensaje de error.
     if (kDebugMode) {
-      print("5. Error al conectar con el servidor: $e");
+      print("DEBUG: Error al conectar con el servidor: $e");
     }
-
-    // Mostrar un mensaje de error en la pantalla si la conexión falla.
     ScaffoldMessenger.of(context as BuildContext).showSnackBar(
       const SnackBar(content: Text("Error al conectar con el servidor")),
     );

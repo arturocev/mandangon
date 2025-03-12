@@ -3,65 +3,68 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-// Función para obtener las listas de compra desde el servidor y actualizarlas en la UI.
-Future<void> obtenerListasCompra(BuildContext context, List<Map<String, dynamic>> listasCompra, Function(Function()) setState) async {
-  if (kDebugMode) {
-    print("1. Intentando obtener listas de compra...");
-  }
+Future<void> obtenerListasCompra(BuildContext context, List<Map<String, dynamic>> listasCompra, Function(Function()) setState, int usuarioId) async {
+  String url = "http://localhost/mandangon/obtener_listas.php?usuario_id=$usuarioId";
 
   try {
-    // Realizamos una solicitud GET al servidor para obtener las listas de compra.
-    final response = await http.get(Uri.parse('http://localhost/mandangon/obtener_listas.php'));
-
-    if (kDebugMode) {
-      print("2. Respuesta recibida: ${response.statusCode}");
-    }
+    // Realizar la solicitud HTTP GET al servidor
+    var response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      if (kDebugMode) {
-        print("3. Respuesta del servidor: ${response.body}");
-      }
-      // Decodificamos la respuesta del servidor (en formato JSON) a una lista de listas de compra.
-      List<dynamic> listas = json.decode(response.body);
+      // Decodificar la respuesta JSON
+      var responseData = jsonDecode(response.body); // Suponiendo que la respuesta es un JSON
 
-      // Actualizamos el estado de la UI con las listas de compra obtenidas.
-      setState(() {
-        listasCompra.clear(); // Limpiar la lista actual de listas de compra
-        // Agregamos las nuevas listas obtenidas.
-        listasCompra.addAll(listas.map((lista) {
-          return {
-            'id_list': int.tryParse(lista['id_list'].toString()) ?? 0, // Convertir id_list a int
-            'nombre': lista['nombre'], // Asignar el nombre de la lista
-            'productos': List<String>.from(lista['productos']), // Convertir productos a una lista de strings
-            'list_color': lista['color'] ?? "#FFFFFF", // Asignar el color de la lista (por defecto blanco)
-          };
-        }).toList());
-      });
+      if (responseData is List) {
+        // Si la respuesta es una lista, procesamos cada elemento
+        List<Map<String, dynamic>> listas = List<Map<String, dynamic>>.from(responseData);
 
-      if (kDebugMode) {
-        print("4. Listas de compra cargadas con éxito.");
+        // Aquí puedes manejar la lista de listas de compra
+        for (var lista in listas) {
+          if (kDebugMode) {
+            if (kDebugMode) {
+              print(lista['id_list']);
+            }
+          }
+          if (kDebugMode) {
+            print(lista['nombre']);
+          }
+          if (kDebugMode) {
+            if (kDebugMode) {
+              print(lista['productos']);
+            }
+          }
+          if (kDebugMode) {
+            print(lista['list_color']);
+          }
+        }
+
+        // Usar setState para actualizar el estado si es necesario
+        setState(() {
+          listasCompra.clear();
+          listasCompra.addAll(listas);
+        });
+      } else if (responseData is Map && responseData['error'] == true) {
+        // Si la respuesta es un objeto con un error
+        if (kDebugMode) {
+          if (kDebugMode) {
+            print('Error: ${responseData['mensaje']}');
+          }
+        }
+      } else {
+        if (kDebugMode) {
+          print('Respuesta desconocida: $responseData');
+        }
       }
     } else {
+      // Si la respuesta del servidor no es exitosa
       if (kDebugMode) {
-        print("5. Error: Respuesta inesperada del servidor.");
+        print('Error: No se pudo obtener la respuesta del servidor');
       }
-      
-      // Si ocurre un error al obtener las listas, mostramos un mensaje de error.
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al cargar las listas. Intente de nuevo.")),
-      );
     }
   } catch (e) {
     if (kDebugMode) {
-      print("6. Error al conectar con el servidor: $e");
+      print('Error al realizar la solicitud: $e');
     }
-
-    // Si ocurre un error al conectar con el servidor, mostramos un mensaje de error.
-    // ignore: use_build_context_synchronously
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Error al conectar con el servidor.")),
-    );
   }
 }
 
