@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class AjustesScreen extends StatefulWidget {
-  const AjustesScreen({super.key});
+  final int userId; // ID del usuario
+
+  const AjustesScreen({super.key, required this.userId});
 
   @override
   State<AjustesScreen> createState() => _AjustesScreenState();
@@ -21,7 +24,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
     });
   }
 
-  void _confirmPasswordChange() {
+  Future<void> _updatePassword() async {
     String newPassword = _newPasswordController.text;
     String confirmPassword = _confirmPasswordController.text;
 
@@ -39,10 +42,24 @@ class _AjustesScreenState extends State<AjustesScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Contraseña actualizada con éxito.")),
+    var response = await http.post(
+      Uri.parse('https://tudominio.com/cambiar_contrasena.php'),
+      body: {
+        'id_usu': widget.userId.toString(),
+        'new_password': newPassword,
+      },
     );
-    _toggleChangePassword();
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Contraseña actualizada con éxito.")),
+      );
+      _toggleChangePassword();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error al actualizar la contraseña.")),
+      );
+    }
   }
 
   void _showTermsAndPrivacy(String title, String content) {
@@ -98,7 +115,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
                   ),
                   const SizedBox(height: 20.0),
                   ElevatedButton(
-                    onPressed: _confirmPasswordChange,
+                    onPressed: _updatePassword,
                     child: const Text("Confirmar"),
                   ),
                 ],
