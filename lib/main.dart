@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'navigation_wrapper.dart';
+import 'screens/navigation_wrapper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'TFG',
-      home: const NavigationWrapper(selectedIndex: 1), 
+      home: const NavigationWrapper(selectedIndex: 1),
       debugShowCheckedModeBanner: false,
     );
   }

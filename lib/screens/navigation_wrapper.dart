@@ -42,8 +42,10 @@ class NavigationWrapperState extends State<NavigationWrapper> {
         currentIndex: currentIndex,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: "Recetas"),
-          BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: "Restaurantes"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book), label: "Recetas"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.restaurant), label: "Restaurantes"),
         ],
         onTap: onTabTapped,
       ),
