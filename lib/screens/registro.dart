@@ -7,10 +7,10 @@ class Registro extends StatefulWidget {
   const Registro({super.key});
 
   @override
-  State<Registro> createState() => _RegistroState();
+  State<Registro> createState() => RegistroEstado();
 }
 
-class _RegistroState extends State<Registro> {
+class RegistroEstado extends State<Registro> {
   final TextEditingController controladorNombreCompleto =
       TextEditingController();
   final TextEditingController controladorEmail = TextEditingController();
@@ -33,7 +33,7 @@ class _RegistroState extends State<Registro> {
               const Image(image: AssetImage("assets/logo.png")),
 
               // Campo de texto: Nombre Completo
-              _inputField(
+              campoTexto(
                 controller: controladorNombreCompleto,
                 labelText: "Nombre Completo",
                 inputType: TextInputType.name,
@@ -43,14 +43,14 @@ class _RegistroState extends State<Registro> {
               ),
 
               // Campo de texto: Email
-              _inputField(
+              campoTexto(
                 controller: controladorEmail,
                 labelText: "Email",
                 inputType: TextInputType.emailAddress,
               ),
 
               // Campo de texto: Contraseña
-              _inputField(
+              campoTexto(
                 controller: contrasenia,
                 labelText: "Contraseña",
                 obscureText: ocultarPass,
@@ -68,7 +68,7 @@ class _RegistroState extends State<Registro> {
               ),
 
               // Campo de texto: Confirmar Contraseña
-              _inputField(
+              campoTexto(
                 controller: confirmarContrasenia,
                 labelText: "Confirmar Contraseña",
                 obscureText: ocultarPass,
@@ -114,7 +114,7 @@ class _RegistroState extends State<Registro> {
   }
 
   // Widget para los campos de texto
-  Widget _inputField({
+  Widget campoTexto({
     required TextEditingController controller,
     required String labelText,
     TextInputType? inputType,
