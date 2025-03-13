@@ -20,15 +20,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
 
-  Future<void> _pickImage() async {
-    final XFile? selectedImage =
-        await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? selectedImage = await _picker.pickImage(source: source);
 
     if (selectedImage != null) {
       setState(() {
         _image = selectedImage;
       });
-
       await _uploadImage(File(_image!.path));
     }
   }
@@ -38,7 +36,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
       'POST',
       Uri.parse('https://192.168.126.80/guardar_foto.php'),
     );
-
     request.fields['id_usu'] = widget.userId.toString();
 
     String mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
@@ -59,6 +56,78 @@ class _PerfilScreenState extends State<PerfilScreen> {
     } else {
       print('Error al subir la imagen');
     }
+  }
+
+  void _showImageOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text("Hacer foto desde la cámara"),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text("Sacar foto desde la galería"),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            if (_image != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text("Eliminar foto",
+                    style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmDeleteImage();
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.cancel),
+              title: const Text("Cancelar"),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteImage() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Eliminar imagen"),
+          content: const Text(
+              "¿Estás seguro de que deseas eliminar tu foto de perfil?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _image = null;
+                });
+                Navigator.pop(context);
+              },
+              child:
+                  const Text("Eliminar", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -85,7 +154,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: _pickImage,
+              onPressed: _showImageOptions,
               icon: const Icon(Icons.image),
               label: const Text("Editar imagen"),
             ),
