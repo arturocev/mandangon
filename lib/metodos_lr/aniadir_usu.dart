@@ -28,9 +28,9 @@ class AgregarUsuario {
       if (respuesta.statusCode == 200) {
         if (data["error"] == true) {
           // ignore: use_build_context_synchronously
-          _mostrarDialogo(context, "Error", data["mensaje"]);
+          mensaje(context, "Error", data["mensaje"]);
         } else {
-          _mostrarDialogo(
+          mensaje(
             // ignore: use_build_context_synchronously
             context,
             "Cuenta Creada",
@@ -60,7 +60,7 @@ class AgregarUsuario {
     }
   }
 
-  static void _mostrarDialogo(BuildContext context, String titulo, String mensaje, {VoidCallback? onAceptar}) {
+  static void mensaje(BuildContext context, String titulo, String mensaje, {VoidCallback? onAceptar}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

@@ -7,10 +7,10 @@ class IniciarSesion extends StatefulWidget {
   const IniciarSesion({super.key});
 
   @override
-  State<IniciarSesion> createState() => _IniciarSesionState();
+  State<IniciarSesion> createState() => ISEstado();
 }
 
-class _IniciarSesionState extends State<IniciarSesion>
+class ISEstado extends State<IniciarSesion>
     with SingleTickerProviderStateMixin {
   late TextEditingController controladorEmail;
   late TextEditingController controladorPass;
