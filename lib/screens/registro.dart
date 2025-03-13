@@ -23,15 +23,24 @@ class RegistroEstado extends State<Registro> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Center(  // Esto asegura que todo el contenido esté centrado
-        child: SingleChildScrollView(  // Para permitir el desplazamiento en pantallas pequeñas
+      appBar: AppBar(
+        backgroundColor: Color(0xFFF9E4B7), // Color cálido para la AppBar
+        title: const Text('Registro', style: TextStyle(color: Colors.black)),
+        elevation: 0,
+      ),
+      body: Center(
+        // Centra todo el contenido en la pantalla
+        child: SingleChildScrollView(
+          // Para permitir desplazamiento en pantallas pequeñas
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Image(image: AssetImage("assets/logo.png")),
-
+              Padding(
+                padding: const EdgeInsets.only(
+                    bottom: 40), // Aumenta el margen de abajo
+                child: const Image(image: AssetImage("assets/logo.png")),
+              ),
               // Campo de texto: Nombre Completo
               campoTexto(
                 controller: controladorNombreCompleto,
@@ -74,37 +83,51 @@ class RegistroEstado extends State<Registro> {
                 obscureText: ocultarPass,
               ),
 
-              // Botón de registro
-              FloatingActionButton.extended(
-                onPressed: () async {
-                  if (!validarEmail(controladorEmail.text) ||
-                      !validarPassword(
-                          contrasenia.text, confirmarContrasenia.text)) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text("Datos Incorrectos"),
-                        content: const Text(
-                          "Asegúrate de escribir un email correcto y de que la contraseña contenga: una mayúscula, una minúscula, un número y mínimo 8 caracteres",
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Aceptar"),
+              // Botón de registro con diseño mejorado
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (!validarEmail(controladorEmail.text) ||
+                        !validarPassword(
+                            contrasenia.text, confirmarContrasenia.text)) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Datos Incorrectos"),
+                          content: const Text(
+                            "Asegúrate de escribir un email correcto y de que la contraseña contenga: una mayúscula, una minúscula, un número y mínimo 8 caracteres",
                           ),
-                        ],
-                      ),
-                    );
-                  } else {
-                    await AgregarUsuario.agregarUsuario(
-                      context,
-                      controladorNombreCompleto.text,
-                      controladorEmail.text,
-                      contrasenia.text,
-                    );
-                  }
-                },
-                label: const Text("Crear cuenta"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Aceptar"),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      await AgregarUsuario.agregarUsuario(
+                        context,
+                        controladorNombreCompleto.text,
+                        controladorEmail.text,
+                        contrasenia.text,
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 80, 255, 220), // Azul suave
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 15),
+                  ),
+                  child: const Text(
+                    "Crear cuenta",
+                    style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 18, 1, 66), fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ],
           ),
@@ -113,7 +136,7 @@ class RegistroEstado extends State<Registro> {
     );
   }
 
-  // Widget para los campos de texto
+  // Widget para los campos de texto con diseño mejorado
   Widget campoTexto({
     required TextEditingController controller,
     required String labelText,
@@ -132,8 +155,14 @@ class RegistroEstado extends State<Registro> {
           inputFormatters: formatter,
           obscureText: obscureText,
           decoration: InputDecoration(
-            border: const OutlineInputBorder(),
+            filled: true,
+            fillColor: Color(0xFFFFF7E1), // Fondo crema suave para los campos
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10), // Bordes redondeados
+              borderSide: BorderSide(color: Color(0xFFFAF1E6)),
+            ),
             labelText: labelText,
+            labelStyle: TextStyle(color: Colors.black),
             suffixIcon: suffixIcon,
           ),
         ),
