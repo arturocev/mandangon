@@ -69,7 +69,7 @@ Future<void> obtenerListasCompra(BuildContext context, List<Map<String, dynamic>
 }
 
 // Función para mostrar las tarjetas de la lista de compras.
-Widget listaCompraCard(Map<String, dynamic> lista) {
+Widget tarjetaListaCompra(Map<String, dynamic> lista) {
   // Convertir el color hexadecimal de la lista en un objeto Color de Flutter
   Color colorCard = Color(int.parse("0xFF${lista['color'].substring(1)}")); // Convertir el color hexadecimal a Color
 

@@ -1,9 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:mandangon/metodos_lc/confirmar_eliminar_lc.dart';
 import 'package:mandangon/metodos_lc/color_lc.dart';
 import '../screens/lista_compra.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart'; // Para compartir en Web
 
 // Muestra un cuadro de diálogo con opciones para editar, ver, cambiar color o eliminar una lista de compra.
 void mostrarOpcionesLista(
@@ -11,7 +14,7 @@ void mostrarOpcionesLista(
     int index,
     List<Map<String, dynamic>> listasCompra,
     StateSetter setState,
-    int usuarioId  // Se agrega el parámetro requerido
+    int usuarioId // Se agrega el parámetro requerido
     ) {
   final lista = listasCompra[index]; // Obtener la lista seleccionada.
 
@@ -85,6 +88,14 @@ void mostrarOpcionesLista(
                 eligeColor(context, index, listasCompra, setState);
               },
             ),
+            // Opción para compartir la lista.
+            ListTile(
+              title: const Text("Compartir"),
+              onTap: () {
+                compartirLista(lista);
+                Navigator.pop(context);
+              },
+            ),
             // Opción para eliminar la lista.
             ListTile(
               title: const Text("Eliminar"),
@@ -98,6 +109,52 @@ void mostrarOpcionesLista(
       );
     },
   );
+}
+
+void compartirLista(Map<String, dynamic> lista) async {
+  try {
+    String titulo = "*${lista["nombre"]}*"; // Negrita para WhatsApp/Email
+    List<dynamic> productos = lista["productos"] ?? [];
+
+    // ignore: unnecessary_type_check
+    if (productos is! List) {
+      productos = [];
+    }
+
+    // ignore: prefer_interpolation_to_compose_strings
+    String contenido = "$titulo\n\n" + productos.map((p) => "• $p").join("\n");
+    final Uri emailUrl =
+        Uri.parse("mailto:?subject=Lista de Compra&body=$contenido");
+
+    if (kIsWeb) {
+      // 🔹 Compartir en Web (abre WhatsApp Web)
+      final Uri shareUrl = Uri.parse(
+          "https://web.whatsapp.com/send?text=${Uri.encodeComponent(contenido)}");
+      if (!await launchUrl(shareUrl)) {
+        if (kDebugMode) {
+          print("Error al abrir WhatsApp Web");
+        }
+      }
+    } else if (Platform.isAndroid || Platform.isIOS) {
+      // 🔹 Compartir en Android/iOS (Share Plus)
+      Share.share(contenido);
+    } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      // 🔹 Compartir en Escritorio (Email)
+      if (!await launchUrl(emailUrl)) {
+        if (kDebugMode) {
+          print("No se pudo abrir el correo.");
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print("Plataforma no soportada.");
+      }
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print("Error al compartir la lista: $e");
+    }
+  }
 }
 
 // Función para convertir un color hexadecimal a un Color de Flutter.

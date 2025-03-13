@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;  // Paquete para hacer solicitudes HTTP
 import 'dart:convert';  // Paquete para convertir datos a formato JSON
 
+// Función para convertir un color hexadecimal a un color de Flutter
+Color convertirColor(String colorHex) {
+  return Color(int.parse(colorHex.replaceAll("#", "0xFF")));
+}
 // Función que actualiza el color de una lista de compras en el servidor
 Future<void> actualizarColorLista(BuildContext context, int idLista, String nuevoColor) async {
   try {

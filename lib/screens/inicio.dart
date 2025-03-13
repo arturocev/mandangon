@@ -1,71 +1,36 @@
 import 'package:flutter/material.dart';
+import '../metodos_lc/color_lc.dart';
+import '../metodos_lc/ordenar_lc.dart';
 import '../metodos_lc/get_lc.dart';
 import '../metodos_lc/aniadir_lc.dart';
 import '../metodos_lc/opciones_lc.dart';
 
 class PantallaPrincipal extends StatefulWidget {
-  final int usuarioId; // Parámetro para recibir el ID del usuario
+  final int usuarioId;
 
-  const PantallaPrincipal({super.key, required this.usuarioId}); // Constructor que recibe el ID del usuario
+  const PantallaPrincipal({super.key, required this.usuarioId});
 
   @override
   PPEstado createState() => PPEstado();
 }
 
 class PPEstado extends State<PantallaPrincipal> {
-  List<Map<String, dynamic>> listasCompra =
-      []; // Lista que almacenará las listas de compras.
+  List<Map<String, dynamic>> listasCompra = [];
 
   @override
   void initState() {
     super.initState();
-    // Llama al método para obtener las listas de compra.
-    // Pasa el contexto, la lista de compras y el método setState.
     obtenerListasCompra(context, listasCompra, setState, widget.usuarioId);
-  }
-
-  // Función para convertir un color hexadecimal a un color de Flutter
-  Color parseColor(String colorHex) {
-    return Color(int.parse(colorHex.replaceAll("#", "0xFF")));
-  }
-
-  // Función para ordenar las listas de compra sin distinguir mayúsculas/minúsculas
-  // y con números antes que letras
-  void ordenarListasCompra() {
-    listasCompra.sort((a, b) {
-      String nombreA = a["nombre"].toLowerCase(); // Convertir a minúsculas
-      String nombreB = b["nombre"].toLowerCase(); // Convertir a minúsculas
-
-      // Verificar si el nombre comienza con un número
-      bool aEsNumero =
-          nombreA.isNotEmpty && nombreA[0].contains(RegExp(r'[0-9]'));
-      bool bEsNumero =
-          nombreB.isNotEmpty && nombreB[0].contains(RegExp(r'[0-9]'));
-
-      // Si ambos comienzan con números o ambos no, comparar alfabéticamente
-      if ((aEsNumero && bEsNumero) || (!aEsNumero && !bEsNumero)) {
-        return nombreA.compareTo(nombreB);
-      }
-      // Si A comienza con número y B no, A va primero
-      else if (aEsNumero) {
-        return -1;
-      }
-      // Si B comienza con número y A no, B va primero
-      else {
-        return 1;
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     // Ordenar las listas de compra antes de mostrarlas
-    ordenarListasCompra();
+    ordenarListasCompra(listasCompra);
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading:
-            false, // Evita que aparezca el botón de "atrás"
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         toolbarHeight: 70,
@@ -74,111 +39,76 @@ class PPEstado extends State<PantallaPrincipal> {
           child: Image.asset("assets/logo.png", height: 50),
         ),
         actions: [
-          // Iconos de acción en el AppBar con margen
           Padding(
-            padding:
-                const EdgeInsets.only(right: 16.0), // Espaciado de los iconos.
+            padding: const EdgeInsets.only(right: 16.0),
             child: IconButton(
-              icon: const Icon(Icons.person), // Icono de perfil de usuario.
-              onPressed:
-                  () {}, // Acción al presionar el icono de perfil (vacío por ahora).
+              icon: const Icon(Icons.person),
+              onPressed: () {},
             ),
           ),
           Padding(
-            padding:
-                const EdgeInsets.only(right: 16.0), // Espaciado de los iconos.
+            padding: const EdgeInsets.only(right: 16.0),
             child: IconButton(
-              icon: const Icon(Icons.settings), // Icono de configuración.
-              onPressed:
-                  () {}, // Acción al presionar el icono de configuración (vacío por ahora).
+              icon: const Icon(Icons.settings),
+              onPressed: () {},
             ),
           ),
         ],
       ),
       body: Stack(
         children: [
-          // Fondo de la pantalla (fondo2.png) colocado de fondo
           Positioned.fill(
             child: Image.asset(
-              "assets/fondo15.png", // Fondo de la pantalla
-              fit: BoxFit.cover, // Ajuste para cubrir toda la pantalla
+              "assets/fondo15.png",
+              fit: BoxFit.cover,
             ),
           ),
           Column(
             children: [
-              const SizedBox(
-                  height:
-                      20), // Espacio entre la parte superior y el contenido.
+              const SizedBox(height: 20),
               Expanded(
                 child: listasCompra.isEmpty
-                    ? const Center(
-                        child: Text(
-                            "No hay listas de compra")) // Mensaje cuando no hay listas de compra.
+                    ? const Center(child: Text("No hay listas de compra"))
                     : ListView.builder(
-                        itemCount:
-                            listasCompra.length, // Cuenta las listas de compra.
+                        itemCount: listasCompra.length,
                         itemBuilder: (context, index) {
-                          final lista = listasCompra[
-                              index]; // Obtiene cada lista de compra.
+                          final lista = listasCompra[index];
 
-                          final colorLista = parseColor(lista["color"] ??
-                              "#FFCCCBB"); // Color de fondo para cada lista.
+                          final colorLista = convertirColor(lista["color"] ?? "#FFCCCBB");
 
                           return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 5,
-                                horizontal:
-                                    15), // Espaciado alrededor de cada elemento de la lista.
+                            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
                             child: Align(
-                              alignment: Alignment
-                                  .center, // Alinea el contenedor al centro.
+                              alignment: Alignment.center,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical:
-                                        8), // Padding dentro del contenedor.
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color:
-                                      colorLista, // Color de fondo de la lista.
-                                  borderRadius: BorderRadius.circular(
-                                      12), // Bordes redondeados.
+                                  color: colorLista,
+                                  borderRadius: BorderRadius.circular(12),
                                   boxShadow: const [
                                     BoxShadow(
-                                      color: Colors.black, // Sombra negra.
-                                      blurRadius: 4, // Difusión de la sombra.
-                                      offset: Offset(
-                                          0, 2), // Desplazamiento de la sombra.
+                                      color: Colors.black,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
                                     ),
                                   ],
                                 ),
                                 child: InkWell(
                                   onTap: () => mostrarOpcionesLista(
-                                      context,
-                                      index,
-                                      listasCompra,
-                                      setState,
-                                      widget.usuarioId), // Acción al hacer clic en una lista.
+                                      context, index, listasCompra, setState, widget.usuarioId),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0), // Espaciado interno.
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                     child: Text(
-                                      lista[
-                                          "nombre"], // Muestra el nombre de la lista de compra.
+                                      lista["nombre"],
                                       style: const TextStyle(
-                                        fontFamily:
-                                            'DancingScript', // Fuente personalizada.
-                                        fontSize: 18, // Tamaño de fuente.
-                                        fontWeight: FontWeight
-                                            .bold, // Peso de la fuente.
-                                        color: Color.fromARGB(
-                                            255, 0, 0, 0), // Color del texto.
+                                        fontFamily: 'DancingScript',
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color.fromARGB(255, 0, 0, 0),
                                       ),
-                                      textAlign:
-                                          TextAlign.center, // Centra el texto.
-                                      softWrap:
-                                          true, // Permite que el texto se ajuste.
-                                      maxLines:
-                                          2, // Máximo de dos líneas para el texto.
+                                      textAlign: TextAlign.center,
+                                      softWrap: true,
+                                      maxLines: 2,
                                     ),
                                   ),
                                 ),
@@ -188,17 +118,12 @@ class PPEstado extends State<PantallaPrincipal> {
                         },
                       ),
               ),
-              if (listasCompra.length <
-                  25) // Verifica si hay menos de 25 listas de compra.
+              if (listasCompra.length < 25)
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 10), // Espaciado alrededor del botón.
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   child: IconButton(
-                    icon: const Icon(Icons.add_circle,
-                        size: 50,
-                        color: Color.fromARGB(
-                            255, 0, 0, 0)), // Icono de añadir nueva lista.
-                    onPressed: () => nuevaLC(context, listasCompra, setState, widget.usuarioId), // Acción para añadir una nueva lista.
+                    icon: const Icon(Icons.add_circle, size: 50, color: Color.fromARGB(255, 0, 0, 0)),
+                    onPressed: () => nuevaLC(context, listasCompra, setState, widget.usuarioId),
                   ),
                 ),
             ],
@@ -208,20 +133,19 @@ class PPEstado extends State<PantallaPrincipal> {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home), // Icono de inicio.
-            label: "Inicio", // Etiqueta de la primera opción.
+            icon: Icon(Icons.home),
+            label: "Inicio",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book), // Icono de recetas.
-            label: "Recetas", // Etiqueta de la segunda opción.
+            icon: Icon(Icons.menu_book),
+            label: "Recetas",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant), // Icono de restaurantes.
-            label: "Restaurantes", // Etiqueta de la tercera opción.
+            icon: Icon(Icons.restaurant),
+            label: "Restaurantes",
           ),
         ],
-        onTap:
-            (index) {}, // Acción cuando se toca un ítem de la barra de navegación (vacío por ahora).
+        onTap: (index) {},
       ),
     );
   }
