@@ -47,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AjustesScreen(userId: 1),
+        builder: (context) => const AjustesScreen(userId: 3),
       ),
     );
   }
@@ -57,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
       context,
       MaterialPageRoute(
         builder: (context) =>
-            const PerfilScreen(userId: 1, usuarios: 'Usuario'),
+            const PerfilScreen(userId: 3, usuarios: 'Usuario'),
       ),
     );
   }
