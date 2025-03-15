@@ -13,6 +13,7 @@ class RecetasScreen extends StatefulWidget {
 }
 
 class RecetasScreenState extends State<RecetasScreen> {
+  // Lista para almacenar las recetas
   List<Map<String, String>> recetas = [];
 
   @override
@@ -20,12 +21,15 @@ class RecetasScreenState extends State<RecetasScreen> {
     super.initState();
   }
 
+  // Función para agregar una nueva receta
   void agregarReceta() async {
+    // Navega a la pantalla CrearRecetaScreen y espera la receta creada
     final nuevaReceta = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CrearRecetaScreen()),
     );
 
+    // Si la receta no es nula, la agrega a la lista de recetas
     if (nuevaReceta != null) {
       setState(() {
         recetas.add(nuevaReceta);
@@ -33,6 +37,7 @@ class RecetasScreenState extends State<RecetasScreen> {
     }
   }
 
+  // Función para eliminar una receta
   Future<void> eliminarReceta(int index) async {
     // Confirmar eliminación
     showDialog(
@@ -52,6 +57,7 @@ class RecetasScreenState extends State<RecetasScreen> {
                 // Llamar a la API para eliminar la receta
                 await _eliminarRecetaDesdeServidor(recetas[index]['id_rec']);
                 setState(() {
+                  // Elimina la receta de la lista
                   recetas.removeAt(index);
                 });
               },
@@ -63,10 +69,12 @@ class RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
+  // Función que se comunica con el servidor para eliminar una receta
   Future<void> _eliminarRecetaDesdeServidor(String? idReceta) async {
     final String url = 'http://localhost/eliminar_receta.php';
 
     try {
+      // Realiza una solicitud POST al servidor para eliminar la receta
       final response = await http.post(
         Uri.parse(url),
         body: {'rec_id': idReceta ?? ''},
@@ -91,6 +99,7 @@ class RecetasScreenState extends State<RecetasScreen> {
     }
   }
 
+  // Función para mostrar las opciones (editar, ver descripción, eliminar) de una receta
   void mostrarOpciones(int index) {
     showDialog(
       context: context,
@@ -126,6 +135,7 @@ class RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
+  // Función para editar una receta
   void editarReceta(int index) async {
     final recetaEditada = await Navigator.push(
       context,
@@ -134,6 +144,7 @@ class RecetasScreenState extends State<RecetasScreen> {
       ),
     );
 
+    // Si la receta ha sido editada, se actualiza en la lista
     if (recetaEditada != null) {
       setState(() {
         recetas[index] = recetaEditada;
@@ -141,6 +152,7 @@ class RecetasScreenState extends State<RecetasScreen> {
     }
   }
 
+  // Función para ver la descripción de una receta
   void verDescripcion(int index) {
     showDialog(
       context: context,
@@ -169,6 +181,7 @@ class RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
+  // Función para mostrar la imagen de la receta (si existe)
   Widget mostrarImagen(String? path) {
     if (path == null || path.isEmpty) {
       return Container(
@@ -190,7 +203,6 @@ class RecetasScreenState extends State<RecetasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recetas'),
         actions: [
           // Icono de perfil
           IconButton(
@@ -259,7 +271,7 @@ class RecetasScreenState extends State<RecetasScreen> {
   }
 }
 
-// Pantalla de perfil (solo ejemplo)
+// Pantalla de perfil (temporal)
 class PerfilScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -270,7 +282,7 @@ class PerfilScreen extends StatelessWidget {
   }
 }
 
-// Pantalla de configuración (solo ejemplo)
+// Pantalla de configuración (temporal)
 class ConfiguracionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
