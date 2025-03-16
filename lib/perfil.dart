@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,43 +20,127 @@ class PerfilScreen extends StatefulWidget {
 class _PerfilScreenState extends State<PerfilScreen> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
+  Uint8List? _webImage;
+  final String _serverUrl = "http://192.168.1.15";
+  // Cambia esto por tu IP del servidor
 
   Future<void> _pickImage(ImageSource source) async {
     final XFile? selectedImage = await _picker.pickImage(source: source);
-
     if (selectedImage != null) {
+      if (kIsWeb) {
+        _webImage = await selectedImage.readAsBytes();
+      }
       setState(() {
         _image = selectedImage;
       });
-      await _uploadImage(File(_image!.path));
+
+      bool success = await _uploadImage(selectedImage);
+      if (success) {
+        _showMessage("✅ Imagen subida correctamente");
+      } else {
+        _showMessage("❌ Error al subir la imagen");
+      }
     }
   }
 
-  Future<void> _uploadImage(File imageFile) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://192.168.126.80/guardar_foto.php'),
-    );
-    request.fields['id_usu'] = widget.userId.toString();
+  Future<bool> _uploadImage(XFile imageFile) async {
+    try {
+      var uri = Uri.parse('$_serverUrl/guardar_foto.php');
+      var request = http.MultipartRequest('POST', uri);
+      request.fields['id_usu'] = widget.userId.toString();
 
-    String mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
-    var mimeTypeSplit = mimeType.split('/');
+      String mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+      var mimeTypeSplit = mimeType.split('/');
 
-    request.files.add(
-      await http.MultipartFile.fromPath(
-        'image',
-        imageFile.path,
-        contentType: MediaType(mimeTypeSplit[0], mimeTypeSplit[1]),
-      ),
-    );
+      if (kIsWeb) {
+        var imageBytes = await imageFile.readAsBytes();
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'image',
+            imageBytes,
+            filename: imageFile.name,
+            contentType: MediaType(mimeTypeSplit[0], mimeTypeSplit[1]),
+          ),
+        );
+      } else {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            imageFile.path,
+            contentType: MediaType(mimeTypeSplit[0], mimeTypeSplit[1]),
+          ),
+        );
+      }
 
-    var response = await request.send();
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
 
-    if (response.statusCode == 200) {
-      print('Imagen subida correctamente');
-    } else {
-      print('Error al subir la imagen');
+      print("🔹 Respuesta del servidor: $responseBody");
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print("❌ Error al subir la imagen: $e");
+      return false;
     }
+  }
+
+  Future<void> _deleteImage() async {
+    bool confirmDelete = await _confirmDeleteDialog();
+    if (!confirmDelete) return;
+
+    try {
+      var response = await http.post(
+        Uri.parse('$_serverUrl/eliminar_foto.php'),
+        body: {'id_usu': widget.userId.toString()},
+      );
+
+      var responseBody = response.body;
+      print("🔹 Respuesta al eliminar: $responseBody");
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _image = null;
+          _webImage = null;
+        });
+        _showMessage("✅ Imagen eliminada correctamente");
+      } else {
+        _showMessage("❌ Error al eliminar la imagen");
+      }
+    } catch (e) {
+      print("❌ Error al eliminar la imagen: $e");
+      _showMessage("❌ Error al eliminar la imagen");
+    }
+  }
+
+  Future<bool> _confirmDeleteDialog() async {
+    return await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Eliminar imagen"),
+              content: const Text(
+                  "¿Estás seguro de que deseas eliminar tu foto de perfil?"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text("Cancelar"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text("Eliminar",
+                      style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void _showImageOptions() {
@@ -80,49 +165,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 _pickImage(ImageSource.gallery);
               },
             ),
-            if (_image != null)
+            if (_image != null || _webImage != null)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text("Eliminar foto",
                     style: TextStyle(color: Colors.red)),
                 onTap: () {
                   Navigator.pop(context);
-                  _confirmDeleteImage();
+                  _deleteImage();
                 },
               ),
             ListTile(
               leading: const Icon(Icons.cancel),
               title: const Text("Cancelar"),
               onTap: () => Navigator.pop(context),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _confirmDeleteImage() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Eliminar imagen"),
-          content: const Text(
-              "¿Estás seguro de que deseas eliminar tu foto de perfil?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancelar"),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _image = null;
-                });
-                Navigator.pop(context);
-              },
-              child:
-                  const Text("Eliminar", style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -146,11 +202,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
           children: [
             CircleAvatar(
               radius: 60,
-              backgroundImage: _image != null
-                  ? (kIsWeb
-                      ? NetworkImage(_image!.path) as ImageProvider
-                      : FileImage(File(_image!.path)))
-                  : const AssetImage("assets/images/avatar.png"),
+              backgroundImage: _webImage != null
+                  ? MemoryImage(_webImage!)
+                  : _image != null
+                      ? FileImage(File(_image!.path)) as ImageProvider
+                      : const AssetImage("assets/images/avatar.png"),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
