@@ -37,9 +37,8 @@ class RecetasScreenState extends State<RecetasScreen> {
     }
   }
 
-  // Función para eliminar una receta
+  // Función para eliminar una receta utilizando el nombre (título)
   Future<void> eliminarReceta(int index) async {
-    // Confirmar eliminación
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -53,13 +52,26 @@ class RecetasScreenState extends State<RecetasScreen> {
             ),
             TextButton(
               onPressed: () async {
-                Navigator.pop(context);
-                // Llamar a la API para eliminar la receta
-                await _eliminarRecetaDesdeServidor(recetas[index]['id_rec']);
-                setState(() {
-                  // Elimina la receta de la lista
-                  recetas.removeAt(index);
-                });
+                Navigator.pop(context); // Cierra el diálogo de confirmación
+
+                String? nombreReceta = recetas[index]['titulo'];
+                if (nombreReceta == null || nombreReceta.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Nombre de receta no válido")),
+                  );
+                  return;
+                }
+
+                // Llamar a la API para eliminar la receta usando el nombre
+                bool eliminada =
+                    await _eliminarRecetaDesdeServidor(nombreReceta);
+
+                if (eliminada) {
+                  setState(() {
+                    recetas.removeAt(
+                        index); // Eliminar la receta de la lista si la API confirma la eliminación
+                  });
+                }
               },
               child: Text("Eliminar"),
             ),
@@ -69,33 +81,41 @@ class RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
-  // Función que se comunica con el servidor para eliminar una receta
-  Future<void> _eliminarRecetaDesdeServidor(String? idReceta) async {
+// Función que se comunica con el servidor para eliminar una receta por nombre
+  Future<bool> _eliminarRecetaDesdeServidor(String nombreReceta) async {
     final String url = 'http://localhost/eliminar_receta.php';
 
     try {
-      // Realiza una solicitud POST al servidor para eliminar la receta
       final response = await http.post(
         Uri.parse(url),
-        body: {'rec_id': idReceta ?? ''},
+        body: {'rec_nom': nombreReceta}, // Se envía el nombre en lugar del ID
       );
 
       final responseData = json.decode(response.body);
 
-      if (responseData['success']) {
+      if (responseData['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Receta eliminada correctamente')),
+          SnackBar(
+            content: Text(
+                responseData['message'] ?? 'Receta eliminada correctamente'),
+          ),
         );
+        return true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al eliminar la receta')),
+          SnackBar(
+            content:
+                Text(responseData['message'] ?? 'Error al eliminar la receta'),
+          ),
         );
+        return false;
       }
     } catch (error) {
       print("Error al eliminar la receta: $error");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión')),
+        SnackBar(content: Text('Error de conexión con el servidor')),
       );
+      return false;
     }
   }
 

@@ -41,6 +41,13 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
     tiempoController =
         TextEditingController(text: widget.receta?['tiempo'] ?? '');
     imagenPath = widget.receta?['imagen'];
+
+    // Si se está editando y existen ingredientes guardados, convertir la cadena a una lista
+    if (widget.receta != null &&
+        widget.receta?['ingredientes'] != null &&
+        widget.receta!['ingredientes']!.isNotEmpty) {
+      ingredientes = widget.receta!['ingredientes']!.split(', ');
+    }
   }
 
   @override
@@ -98,7 +105,6 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
     }
   }
 
-  // Método para guardar la receta en la base de datos
   Future<void> guardarReceta() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -114,29 +120,35 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
       imagenBase64 = base64Encode(imageBytes);
     }
 
+    // Determinar la URL a llamar: si es nueva receta o actualización.
     var url = widget.receta == null
-        ? Uri.parse(
-            "http://localhost/guardar_receta.php") // Guardar nueva receta
-        : Uri.parse(
-            "http://localhost/actualizar_receta.php"); // Actualizar receta existente
+        ? Uri.parse("http://localhost/guardar_receta.php")
+        : Uri.parse("http://localhost/actualizar_receta.php");
 
-    http.Response respuesta = await http.post(url, body: {
-      'rec_id': widget.receta?['id_rec'] ?? '',
+    // Para el caso de actualización, enviamos el nombre original
+    Map<String, String> body = {
       'rec_nom': tituloController.text,
       'rec_tipo_com': tipoController.text,
       'rec_ing': ingredientes.join(', '),
       'rec_desc': instruccionesController.text,
       'rec_tmp': tiempoController.text,
       'rec_img': imagenBase64 ?? '',
-      'rec_usu': 'usuario_demo' // Usuario predeterminado
-    });
+      'rec_usu': 'usuario_demo' // Si se requiere
+    };
+
+    // Si se trata de una actualización, incluimos el nombre original
+    if (widget.receta != null) {
+      body['rec_nom_original'] = widget.receta!['titulo'] ?? '';
+    }
+
+    http.Response respuesta = await http.post(url, body: body);
 
     if (!mounted) return;
 
     if (respuesta.statusCode == 200) {
-      // Si la receta se guarda correctamente, se devuelve la información a la pantalla anterior
+      // Si la receta se guarda/actualiza correctamente, se devuelve la información a la pantalla anterior
       Map<String, String> recetaGuardada = {
-        'id_rec': widget.receta?['id_rec'] ?? 'nuevo',
+        // Si actualizamos, podríamos recibir el nuevo nombre; pero si no, se mantiene el original.
         'titulo': tituloController.text,
         'tipo': tipoController.text,
         'ingredientes': ingredientes.join(', '),
@@ -148,7 +160,6 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
       Navigator.pop(context, recetaGuardada);
     } else {
       debugPrint("Error al guardar o actualizar la receta");
-      // Mostrar error al usuario
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al guardar o actualizar la receta')),
       );
