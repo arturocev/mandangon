@@ -198,7 +198,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
         child: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage("assets/images/receta.jpg"),
+              image: AssetImage("assets/images/recetas.jpg"),
               fit: BoxFit.cover,
             ),
           ),
@@ -222,12 +222,18 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
                     label: "Título",
                     controller: tituloController,
                     hintText: "Ejemplo: Tarta de chocolate",
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]'))
+                    ],
                   ),
                   SizedBox(height: 15),
                   _campoTexto(
                     label: "Tipo de comida",
                     controller: tipoController,
                     hintText: "Ejemplo: Postre",
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]'))
+                    ],
                   ),
                   SizedBox(height: 15),
                   // Lista de ingredientes
@@ -235,16 +241,22 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          style: TextStyle(color: Colors.white),
                           controller: ingredienteController,
                           decoration: InputDecoration(
                             labelText: "Ingrediente",
+                            labelStyle: TextStyle(color: Colors.white),
                             hintText: "Ejemplo: 2 huevos",
+                            hintStyle: TextStyle(color: Colors.white),
                             border: OutlineInputBorder(),
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.add),
+                        icon: Icon(
+                          Icons.add,
+                          color: Colors.white,
+                        ),
                         onPressed: agregarIngrediente,
                       ),
                     ],
@@ -256,9 +268,15 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
                     itemCount: ingredientes.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text(ingredientes[index]),
+                        title: Text(
+                          ingredientes[index],
+                          style: TextStyle(color: Colors.white),
+                        ),
                         trailing: IconButton(
-                          icon: Icon(Icons.delete),
+                          icon: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
                           onPressed: () => eliminarIngrediente(index),
                         ),
                       );
@@ -312,17 +330,13 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
       decoration: InputDecoration(
           labelText: label,
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.black),
-          labelStyle: TextStyle(color: Colors.black),
+          hintStyle: TextStyle(color: Colors.white),
+          labelStyle: TextStyle(color: Colors.white),
           border: OutlineInputBorder()),
-      style: TextStyle(color: Colors.black),
+      style: TextStyle(color: Colors.white),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
           return "Este campo es obligatorio";
-        }
-        if ((label == "Título" || label == "Tipo de comida") &&
-            !RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
-          return "Solo se permiten letras y espacios";
         }
         return null;
       },
