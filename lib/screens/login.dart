@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../metodos_lr/inicio_sesion.dart';  // Importamos el archivo de servicios
-import 'inicio.dart'; // Importa la pantalla de inicio
+import '../metodos_lr/inicio_sesion.dart';
+import 'contrasena.dart';
+import 'inicio.dart';
 
 class IniciarSesion extends StatefulWidget {
   const IniciarSesion({super.key});
@@ -30,102 +31,140 @@ class ISEstado extends State<IniciarSesion>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // Extiende el cuerpo detrás de la AppBar
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF9E4B7), // Color cálido para la AppBar
-        title: const Text("Iniciar Sesión"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Center(  // Aseguramos que el contenido esté centrado
-        child: SingleChildScrollView(  // Permite desplazarse en pantallas pequeñas
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Logo con más margen abajo
-              Padding(
-                padding: const EdgeInsets.only(bottom: 40),  // Más margen debajo del logo
-                child: Image.asset("assets/logo.png"),
-              ),
-              
-              // Campo de texto: Email
-              campoTexto(
-                controller: controladorEmail,
-                labelText: "Email",
-                inputType: TextInputType.emailAddress,
-              ),
+      body: Stack(
+        children: [
+          // Imagen de fondo
+          Positioned.fill(
+            child: Image.asset(
+              "assets/fondo1.png",
+              fit: BoxFit.cover, // Ajusta la imagen al tamaño de la pantalla
+            ),
+          ),
+          // Contenido principal
+          Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Logo
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: Image.asset("assets/logo.png"),
+                  ),
 
-              // Campo de texto: Contraseña
-              campoTexto(
-                controller: controladorPass,
-                labelText: "Contraseña",
-                obscureText: ocultarPass,
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      ocultarPass = !ocultarPass;
-                      iconoPass = ocultarPass
-                          ? const Icon(Icons.visibility)
-                          : const Icon(Icons.visibility_off);
-                    });
-                  },
-                  icon: iconoPass,
-                ),
-              ),
+                  // Campo de texto: Email
+                  campoTexto(
+                    controller: controladorEmail,
+                    labelText: "Email",
+                    inputType: TextInputType.emailAddress,
+                  ),
 
-              // Botón de Iniciar Sesión con diseño mejorado
-              Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 36, 230, 43),  // Fondo verde para el botón
-                    foregroundColor: const Color.fromARGB(255, 10, 56, 1),  // Color del texto a negro
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  // Campo de texto: Contraseña
+                  campoTexto(
+                    controller: controladorPass,
+                    labelText: "Contraseña",
+                    obscureText: ocultarPass,
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          ocultarPass = !ocultarPass;
+                          iconoPass = ocultarPass
+                              ? const Icon(Icons.visibility)
+                              : const Icon(Icons.visibility_off);
+                        });
+                      },
+                      icon: iconoPass,
                     ),
                   ),
-                  onPressed: () async {
-                    if (kDebugMode) {
-                      print("Botón de inicio de sesión presionado");
-                    }
 
-                    int? usuarioId = await inicioSesion(
-                        controladorEmail.text, controladorPass.text, context);
+                  // Botón de Iniciar Sesión
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 36, 230, 43),
+                        foregroundColor: const Color.fromARGB(255, 10, 56, 1),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: () async {
+                        if (kDebugMode) {
+                          print("Botón de inicio de sesión presionado");
+                        }
 
-                    if (usuarioId == null) {
-                      showDialog(
-                        // ignore: use_build_context_synchronously
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text("Datos Incorrectos"),
-                          content: const Text("Asegúrate de que el usuario ya esté registrado"),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Aceptar"),
+                        int? usuarioId = await inicioSesion(
+                            controladorEmail.text,
+                            controladorPass.text,
+                            context);
+
+                        if (usuarioId == null) {
+                          showDialog(
+                            // ignore: use_build_context_synchronously
+                            context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              title: const Text("Datos Incorrectos"),
+                              content: const Text(
+                                  "Asegúrate de que el usuario ya esté registrado"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Aceptar"),
+                                ),
+                              ],
                             ),
-                          ],
+                          );
+                        } else {
+                          Navigator.pushReplacement(
+                            // ignore: use_build_context_synchronously
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  PantallaPrincipal(usuarioId: usuarioId),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text("Iniciar sesión"),
+                    ),
+                  ),
+                  // NUEVO BOTÓN para "¿Olvidaste la contraseña?"
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const RecuperarContrasena()),
+                        );
+                      },
+                      child: const Text(
+                        "¿Olvidaste la contraseña?",
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 243, 33, 33), fontWeight: FontWeight.bold,
                         ),
-                      );
-                    } else {
-                      Navigator.pushReplacement(
-                        // ignore: use_build_context_synchronously
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PantallaPrincipal(usuarioId: usuarioId),
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text("Iniciar sesión"),
-                ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -150,7 +189,7 @@ class ISEstado extends State<IniciarSesion>
           obscureText: obscureText,
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.orange[50],  // Fondo suave de color cálido para el campo
+            fillColor: Colors.orange[50],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
             ),

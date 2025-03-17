@@ -13,100 +13,103 @@ class MandangonApp extends StatelessWidget {
     return MaterialApp(
       title: 'MandangonApp',
       theme: ThemeData(
-        // Definir una paleta de colores cálidos
-        scaffoldBackgroundColor: Color(0xFFF9E4B7), // Fondo color crema cálido
-        primaryColor:
-            Color.fromARGB(255, 145, 215, 118), // Verde suave para botones
-        hintColor: Color.fromARGB(255, 115, 226, 93), // Azul suave para botones
-        textTheme: TextTheme(
+        scaffoldBackgroundColor: Colors.transparent, // Fondo transparente para ver la imagen
+        primaryColor: Color.fromARGB(255, 145, 215, 118),
+        hintColor: Color.fromARGB(255, 115, 226, 93),
+        textTheme: const TextTheme(
           bodyLarge: TextStyle(
-              fontFamily: 'Roboto', fontSize: 16, color: Colors.black),
+            fontFamily: 'Roboto',
+            fontSize: 16,
+            color: Colors.black,
+          ),
         ),
       ),
-      home: const MyHomePage(title: 'Login'),
+      home: const Main(title: 'Login'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class Main extends StatefulWidget {
+  const Main({super.key, required this.title});
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<Main> createState() => MainEstado();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MainEstado extends State<Main> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+      body: Stack(
         children: [
-          // IMAGEN LOGO MANDANGON
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    bottom: 40), // Aumenta el margen de abajo
-                child: const Image(image: AssetImage("assets/logo.png")),
-              ),
-            ],
+          // Imagen de fondo
+          Positioned.fill(
+            child: Image.asset(
+              "assets/fondo1.png",
+              fit: BoxFit.cover, // Ajusta la imagen al tamaño de la pantalla
+            ),
           ),
-          // Botón para ir a la pantalla de iniciar sesión
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 30),
-                child: FloatingActionButton.extended(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                IniciarSesion())); // Línea para navegar a la pantalla de inicio de sesión
-                  },
-                  label: Text(
-                    "Iniciar sesión",
-                    style: TextStyle(color: Color.fromARGB(255, 10, 56, 1), fontSize: 16, fontWeight: FontWeight.bold),
+          // Contenido principal
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Logo Mandangon
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 40),
+                  child: const Image(
+                    image: AssetImage("assets/logo.png"),
                   ),
-                  backgroundColor:
-                      Color.fromARGB(255, 36, 230, 43), // Verde suave
-                  heroTag: "btn1",
                 ),
-              ),
-            ],
-          ),
-          // Botón para ir a la pantalla de registro
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: FloatingActionButton.extended(
-                  onPressed: () {
-                    Navigator.push(
+                // Botón de Iniciar Sesión
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 30),
+                  child: FloatingActionButton.extended(
+                    onPressed: () {
+                      Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                Registro())); // Línea para navegar a la pantalla de registro
-                  },
-                  label: Text(
-                    "Registrarse",
-                    style: TextStyle(color: Color.fromARGB(255, 18, 1, 66), fontSize: 16, fontWeight: FontWeight.bold),
+                        MaterialPageRoute(builder: (context) => IniciarSesion()),
+                      );
+                    },
+                    label: const Text(
+                      "Iniciar sesión",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 10, 56, 1),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    backgroundColor: const Color.fromARGB(255, 36, 230, 43),
+                    heroTag: "btn1",
                   ),
-                  backgroundColor: Color.fromARGB(255, 80, 255, 220), // Azul suave
-                  heroTag: "btn2",
                 ),
-              ),
-            ],
+                // Botón de Registro
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: FloatingActionButton.extended(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Registro()),
+                      );
+                    },
+                    label: const Text(
+                      "Registrarse",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 18, 1, 66),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    backgroundColor: const Color.fromARGB(255, 80, 255, 220),
+                    heroTag: "btn2",
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

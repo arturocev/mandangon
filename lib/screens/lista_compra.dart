@@ -37,111 +37,121 @@ class LCEstado extends State<LCScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFF9E4B7), // Color cálido para la AppBar
-        title: const Text("Lista de Compras", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent, // Hacer la AppBar transparente
+        elevation: 0, // Eliminar la sombra de la AppBar
+        iconTheme: const IconThemeData(color: Color.fromARGB(255, 0, 0, 0)), // Hacer que el ícono de atrás sea visible
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Campo para editar el nombre de la lista.
-            TextField(
-              controller: nombreController,
-              decoration: InputDecoration(
-                labelText: "Nombre de la Lista",
-                labelStyle: TextStyle(color: Colors.black),
-                filled: true,
-                fillColor: Colors.orange[50],  // Fondo suave de color cálido para el campo
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 20),
-
-            // Si es editable, permite agregar productos.
-            if (widget.editable)
+      extendBodyBehindAppBar: true, // Asegurarse de que el contenido del body se muestre detrás de la AppBar
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/fondo3.png'), // Cargar la imagen de fondo
+            fit: BoxFit.cover, // Hacer que la imagen cubra toda la pantalla
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(100.0),
+          child: Column(
+            children: [
+              // Campo para editar el nombre de la lista.
               TextField(
-                controller: productoController,
+                controller: nombreController,
                 decoration: InputDecoration(
-                  labelText: "Producto",
-                  labelStyle: TextStyle(color: Colors.black),
+                  labelText: "Nombre de la Lista",
+                  labelStyle: const TextStyle(color: Colors.black),
                   filled: true,
-                  fillColor: Colors.orange[50],
+                  fillColor: Colors.orange[50],  // Fondo suave de color cálido para el campo
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onSubmitted: (_) =>
-                    agregarProducto(productoController, productos, setState),
+                style: const TextStyle(fontSize: 18),
               ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
-            if (widget.editable)
-              ElevatedButton(
-                onPressed: () =>
-                    agregarProducto(productoController, productos, setState),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 80, 255, 220),  // Fondo verde para el botón
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+              // Si es editable, permite agregar productos.
+              if (widget.editable)
+                TextField(
+                  controller: productoController,
+                  decoration: InputDecoration(
+                    labelText: "Producto",
+                    labelStyle: const TextStyle(color: Colors.black),
+                    filled: true,
+                    fillColor: Colors.orange[50],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 18, 1, 66)
-                  ),
+                  onSubmitted: (_) =>
+                      agregarProducto(productoController, productos, setState),
                 ),
-                child: const Text("Agregar Producto"),
-              ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Muestra la lista de productos.
-            Expanded(
-              child: ListView.builder(
-                itemCount: productos.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(productos[index], style: TextStyle(fontSize: 18)),
-                    trailing: widget.editable
-                        ? IconButton(
-                            icon: const Icon(Icons.delete, color: Color.fromARGB(255, 133, 19, 10)),
-                            onPressed: () => eliminarProducto(index, productos, setState),
-                          )
-                        : null,
-                  );
-                },
-              ),
-            ),
-
-            // Botón para guardar la lista.
-            if (widget.editable)
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    widget.lista["nombre"] = nombreController.text;
-                  });
-                  // Llama a la función de confirmación y pasa además el usuarioId.
-                  // Asegúrate de que la función confirmarLista esté preparada para recibir este parámetro.
-                  confirmarLista(context, widget.lista, productos, widget.onConfirm, widget.usuarioId);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 36, 230, 43),  // Fondo verde para el botón
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+              if (widget.editable)
+                ElevatedButton(
+                  onPressed: () =>
+                      agregarProducto(productoController, productos, setState),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 80, 255, 220),  // Fondo verde para el botón
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 18, 1, 66)
+                    ),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 10, 56, 1)
-                  ),
+                  child: const Text("Agregar Producto"),
                 ),
-                child: const Text("Guardar Lista"),
+              const SizedBox(height: 20),
+
+              // Muestra la lista de productos.
+              Expanded(
+                child: ListView.builder(
+                  itemCount: productos.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(productos[index], style: const TextStyle(fontSize: 18)),
+                      trailing: widget.editable
+                          ? IconButton(
+                              icon: const Icon(Icons.delete, color: Color.fromARGB(255, 133, 19, 10)),
+                              onPressed: () => eliminarProducto(index, productos, setState),
+                            )
+                          : null,
+                    );
+                  },
+                ),
               ),
-          ],
+
+              // Botón para guardar la lista.
+              if (widget.editable)
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      widget.lista["nombre"] = nombreController.text;
+                    });
+                    // Llama a la función de confirmación y pasa además el usuarioId.
+                    // Asegúrate de que la función confirmarLista esté preparada para recibir este parámetro.
+                    confirmarLista(context, widget.lista, productos, widget.onConfirm, widget.usuarioId);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 36, 230, 43),  // Fondo verde para el botón
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 10, 56, 1)
+                    ),
+                  ),
+                  child: const Text("Guardar Lista"),
+                ),
+            ],
+          ),
         ),
       ),
     );

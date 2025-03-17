@@ -29,37 +29,47 @@ class PPEstado extends State<PantallaPrincipal> {
     ordenarListasCompra(listasCompra);
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        toolbarHeight: 70,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Image.asset("assets/logo.png", height: 50),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFECC099),
+            border: Border(
+              bottom: BorderSide(color: Colors.black, width: 1),
+            ),
+          ),
+          child: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Padding(
+              padding: const EdgeInsets.only(left: 16, top: 15),
+              child: Image.asset("assets/logo.png", height: 50),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0, top: 15),
+                child: IconButton(
+                  icon: const Icon(Icons.person, color: Colors.black),
+                  onPressed: () {},
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0, top: 15),
+                child: IconButton(
+                  icon: const Icon(Icons.settings, color: Colors.black),
+                  onPressed: () {},
+                ),
+              ),
+            ],
+          ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              icon: const Icon(Icons.person),
-              onPressed: () {},
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {},
-            ),
-          ),
-        ],
       ),
       body: Stack(
         children: [
           Positioned.fill(
             child: Image.asset(
-              "assets/fondo15.png",
+              "assets/fondo2.png",
               fit: BoxFit.cover,
             ),
           ),
@@ -77,7 +87,12 @@ class PPEstado extends State<PantallaPrincipal> {
                           final colorLista = convertirColor(lista["color"] ?? "#FFCCCBB");
 
                           return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                            padding: EdgeInsets.only(
+                              top: index == 0 ? 20 : 10, // Solo la primera tarjeta baja más
+                              left: 15,
+                              right: 15,
+                              bottom: 10,
+                            ),
                             child: Align(
                               alignment: Alignment.center,
                               child: Container(
@@ -120,7 +135,7 @@ class PPEstado extends State<PantallaPrincipal> {
               ),
               if (listasCompra.length < 25)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.only(bottom: 110),
                   child: IconButton(
                     icon: const Icon(Icons.add_circle, size: 50, color: Color.fromARGB(255, 0, 0, 0)),
                     onPressed: () => nuevaLC(context, listasCompra, setState, widget.usuarioId),
@@ -130,22 +145,32 @@ class PPEstado extends State<PantallaPrincipal> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Inicio",
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Colors.black, width: 1),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: "Recetas",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant),
-            label: "Restaurantes",
-          ),
-        ],
-        onTap: (index) {},
+        ),
+        child: BottomNavigationBar(
+          backgroundColor: Color(0xFFECC099),
+          selectedItemColor: Colors.black,
+          unselectedItemColor: Colors.black54,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: "Inicio",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book),
+              label: "Recetas",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.restaurant),
+              label: "Restaurantes",
+            ),
+          ],
+          onTap: (index) {},
+        ),
       ),
     );
   }

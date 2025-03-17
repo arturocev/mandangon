@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:mandangon/main.dart';
 
 class AgregarUsuario {
-  static Future<void> agregarUsuario(BuildContext context, String nombre, String email, String contrasenia) async {
+  static Future<void> agregarUsuario(BuildContext context, String nombre, String email, String contrasenia, String pregunta, String respuesta) async {
     var url = Uri.parse("http://localhost/mandangon/insertar_datos.php");
 
     try {
@@ -14,19 +14,22 @@ class AgregarUsuario {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      http.Response respuesta = await http.post(url, body: {
+      http.Response respuestaHttp = await http.post(url, body: {
         "nombre": nombre,
         "email": email,
         "contrasenia": contrasenia,
+        "pregunta": pregunta,  // Enviar la pregunta de seguridad
+        "respuesta": respuesta,  // Enviar la respuesta de seguridad
       });
 
       // ignore: use_build_context_synchronously
       Navigator.of(context).pop();
 
-      var data = jsonDecode(respuesta.body);
+      var data = jsonDecode(respuestaHttp.body);
 
-      if (respuesta.statusCode == 200) {
+      if (respuestaHttp.statusCode == 200) {
         if (data["error"] == true) {
+          // ignore: use_build_context_synchronously
           // ignore: use_build_context_synchronously
           mensaje(context, "Error", data["mensaje"]);
         } else {
