@@ -21,6 +21,42 @@ class RecetasScreenState extends State<RecetasScreen> {
     super.initState();
   }
 
+  // Función para obtener recetas desde la base de datos
+  Future<void> obtenerRecetas() async {
+    final String url =
+        'http://localhost/obtener_recetas.php'; // Ajusta la URL si es necesario
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        // Se espera una lista de recetas en JSON
+        List<dynamic> datos = json.decode(response.body);
+
+        setState(() {
+          recetas = datos
+              .map((receta) {
+                // Mapea cada receta del JSON a un Map<String, String> que use los mismos keys que usas en la UI
+                return {
+                  'id_rec': receta['id_rec'].toString(),
+                  'titulo': receta['rec_nom'] ?? '',
+                  'tipo': receta['rec_tipo_com'] ?? '',
+                  'ingredientes': receta['rec_ing'] ?? '',
+                  'instrucciones': receta['rec_desc'] ?? '',
+                  'tiempo': receta['rec_tmp'] ?? '',
+                  'imagen': receta['rec_img'] ?? '',
+                };
+              })
+              .toList()
+              .cast<Map<String, String>>();
+        });
+      } else {
+        print("Error al obtener recetas: ${response.statusCode}");
+      }
+    } catch (error) {
+      print("Error al obtener recetas: $error");
+    }
+  }
+
   // Función para agregar una nueva receta
   void agregarReceta() async {
     // Navega a la pantalla CrearRecetaScreen y espera la receta creada
@@ -188,6 +224,8 @@ class RecetasScreenState extends State<RecetasScreen> {
               Text("Ingredientes: ${recetas[index]['ingredientes']}"),
               SizedBox(height: 10),
               Text("Instrucciones: ${recetas[index]['instrucciones']}"),
+              SizedBox(height: 10),
+              Text("Tiempo estimado: ${recetas[index]['tiempo']}"),
             ],
           ),
           actions: [
