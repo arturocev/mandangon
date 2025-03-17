@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'ajustes.dart';
 import 'perfil.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding
+      .ensureInitialized(); // Asegura la inicialización de Flutter antes de usar async
   runApp(const MyApp());
 }
 

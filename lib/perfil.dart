@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PerfilScreen extends StatefulWidget {
   final int userId;
@@ -22,14 +24,33 @@ class _PerfilScreenState extends State<PerfilScreen> {
   XFile? _image;
   Uint8List? _webImage;
   final String _serverUrl = "http://192.168.1.15";
-  // Cambia esto por tu IP del servidor
+  String? _localImagePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedImage();
+  }
+
+  Future<void> _loadSavedImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedImagePath = prefs.getString('profile_image');
+    if (savedImagePath != null && File(savedImagePath).existsSync()) {
+      setState(() {
+        _localImagePath = savedImagePath;
+      });
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final XFile? selectedImage = await _picker.pickImage(source: source);
     if (selectedImage != null) {
       if (kIsWeb) {
         _webImage = await selectedImage.readAsBytes();
+      } else {
+        await _saveImageLocally(selectedImage);
       }
+
       setState(() {
         _image = selectedImage;
       });
@@ -41,6 +62,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
         _showMessage("❌ Error al subir la imagen");
       }
     }
+  }
+
+  Future<void> _saveImageLocally(XFile imageFile) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final localPath = '${directory.path}/profile_image.jpg';
+    final File localImage = File(localPath);
+    await localImage.writeAsBytes(await imageFile.readAsBytes());
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profile_image', localPath);
+
+    setState(() {
+      _localImagePath = localPath;
+    });
   }
 
   Future<bool> _uploadImage(XFile imageFile) async {
@@ -98,10 +133,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
       print("🔹 Respuesta al eliminar: $responseBody");
 
       if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('profile_image');
+
         setState(() {
           _image = null;
           _webImage = null;
+          _localImagePath = null;
         });
+
         _showMessage("✅ Imagen eliminada correctamente");
       } else {
         _showMessage("❌ Error al eliminar la imagen");
@@ -165,7 +205,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 _pickImage(ImageSource.gallery);
               },
             ),
-            if (_image != null || _webImage != null)
+            if (_image != null || _webImage != null || _localImagePath != null)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text("Eliminar foto",
@@ -204,9 +244,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
               radius: 60,
               backgroundImage: _webImage != null
                   ? MemoryImage(_webImage!)
-                  : _image != null
-                      ? FileImage(File(_image!.path)) as ImageProvider
-                      : const AssetImage("assets/images/avatar.png"),
+                  : _localImagePath != null
+                      ? FileImage(File(_localImagePath!)) as ImageProvider
+                      : _image != null
+                          ? FileImage(File(_image!.path)) as ImageProvider
+                          : const AssetImage("assets/images/avatar.png"),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
