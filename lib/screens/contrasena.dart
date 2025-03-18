@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:mandangon/screens/login.dart'; // Importa la pantalla de inicio
 
 class RecuperarContrasena extends StatefulWidget {
@@ -187,7 +186,7 @@ class RCEstado extends State<RecuperarContrasena> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/fondo2.png'), // Cargar la imagen de fondo
+            image: AssetImage('assets/fondo1.png'), // Cargar la imagen de fondo
             fit: BoxFit.cover, // Hacer que la imagen cubra toda la pantalla
           ),
         ),

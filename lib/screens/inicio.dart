@@ -69,7 +69,7 @@ class PPEstado extends State<PantallaPrincipal> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              "assets/fondo2.png",
+              "assets/fondo1.png",
               fit: BoxFit.cover,
             ),
           ),

@@ -45,7 +45,7 @@ class LCEstado extends State<LCScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/fondo3.png'), // Cargar la imagen de fondo
+            image: AssetImage('assets/fondo1.png'), // Cargar la imagen de fondo
             fit: BoxFit.cover, // Hacer que la imagen cubra toda la pantalla
           ),
         ),

@@ -96,8 +96,7 @@ class RegistroEstado extends State<Registro> {
                           items: const [
                             DropdownMenuItem(
                                 value: 'mascota',
-                                child:
-                                    Text("¿Como se llama tu mascota?")),
+                                child: Text("¿Como se llama tu mascota?")),
                             DropdownMenuItem(
                                 value: 'pelicula',
                                 child: Text("¿Cuál es tu película favorita?")),
@@ -124,16 +123,50 @@ class RegistroEstado extends State<Registro> {
                       ),
                     ),
                   ),
-
                   campoTexto(
                     controller: respuestaSeguridad,
                     labelText: "Respuesta de seguridad",
                     inputType: TextInputType.text,
+                    formatter: [
+                      FilteringTextInputFormatter.allow(RegExp("[a-z-ÿ]"))
+                    ],
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: ElevatedButton(
                       onPressed: () async {
+                        // Limpiar el nombre completo: eliminar espacios extra entre palabras
+                        String nombreCompleto =
+                            controladorNombreCompleto.text.trim();
+                        nombreCompleto = nombreCompleto.replaceAll(
+                            RegExp(r'\s+'),
+                            ' '); // Reemplaza múltiples espacios con un solo espacio
+
+                        // Validación de la respuesta de seguridad
+                        String respuesta = respuestaSeguridad.text.trim();
+
+                        // Aseguramos que la respuesta solo contiene letras
+                        RegExp regex = RegExp(r'^[a-z-ÿ]+$');
+
+                        if (!regex.hasMatch(respuesta)) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title:
+                                  const Text("Respuesta de seguridad inválida"),
+                              content: const Text(
+                                  "La respuesta solo puede contener letras y no debe tener espacios ni números."),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Aceptar"),
+                                ),
+                              ],
+                            ),
+                          );
+                          return; // No continúa si falla
+                        }
+
                         if (!validarEmail(controladorEmail.text) ||
                             !validarPassword(
                                 contrasenia.text, confirmarContrasenia.text)) {
@@ -155,7 +188,7 @@ class RegistroEstado extends State<Registro> {
                         } else {
                           await AgregarUsuario.agregarUsuario(
                             context,
-                            controladorNombreCompleto.text,
+                            nombreCompleto, // Usar el nombre completo limpio
                             controladorEmail.text,
                             contrasenia.text,
                             preguntaSeleccionada,
