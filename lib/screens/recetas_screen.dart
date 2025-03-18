@@ -238,7 +238,6 @@ class RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
-  // Función para mostrar la imagen de la receta (si existe)
   Widget mostrarImagen(String? path) {
     if (path == null || path.isEmpty) {
       return Container(
@@ -249,10 +248,15 @@ class RecetasScreenState extends State<RecetasScreen> {
       );
     }
 
+    // Si 'path' no es una URL completa, se asume que es el nombre del archivo y se construye la URL.
+    String imageUrl =
+        path.startsWith("http") ? path : "http://localhost/uploads/$path";
+
     if (kIsWeb) {
-      return Image.network(path, width: 50, height: 50, fit: BoxFit.cover);
+      return Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover);
     } else {
-      return Image.file(File(path), width: 50, height: 50, fit: BoxFit.cover);
+      return Image.file(File(imageUrl),
+          width: 50, height: 50, fit: BoxFit.cover);
     }
   }
 
@@ -303,7 +307,7 @@ class RecetasScreenState extends State<RecetasScreen> {
                       return Card(
                         color: const Color.fromARGB(255, 102, 21, 21),
                         child: ListTile(
-                          leading: mostrarImagen(recetas[index]['imagen']),
+                          leading: mostrarImagen(recetas[index]['rec_img']),
                           title: Text(
                             recetas[index]['titulo']!,
                             style: TextStyle(color: Colors.white),

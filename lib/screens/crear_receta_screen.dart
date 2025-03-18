@@ -76,7 +76,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
 
   // Método para mostrar la imagen seleccionada
   Widget mostrarImagen() {
-    if (imagenPath == null || imagenPath!.isEmpty) {
+    if (imagenFile == null && (imagenPath == null || imagenPath!.isEmpty)) {
       return Center(
         child: Container(
           width: 150,
@@ -86,21 +86,29 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
         ),
       );
     }
+
     if (kIsWeb) {
-      // En Web, se muestra el nombre de la imagen o un placeholder
       return Center(
-        child: Text(
-          imagenPath!,
-          style: TextStyle(color: Colors.white, fontSize: 16),
+        child: FutureBuilder<Uint8List>(
+          future: imagenFile!.readAsBytes(), // Leer la imagen como bytes
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done &&
+                snapshot.hasData) {
+              return Image.memory(snapshot.data!,
+                  width: 150, height: 150, fit: BoxFit.cover);
+            } else {
+              return CircularProgressIndicator(); // Indicador de carga
+            }
+          },
         ),
       );
     } else {
       return Center(
         child: Image.file(
-          File(imagenPath!),
+          File(imagenFile!.path),
           width: 150,
           height: 150,
-          fit: BoxFit.contain,
+          fit: BoxFit.cover,
         ),
       );
     }
@@ -109,6 +117,20 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
   // Método para guardar la receta usando Multipart (para Web se envía la imagen como bytes)
   Future<void> guardarReceta() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // Validar que se haya seleccionado una imagen
+    if (imagenFile == null && (imagenPath == null || imagenPath!.isEmpty)) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Debe seleccionar una imagen")));
+      return;
+    }
+
+    // Validar que la lista de ingredientes tenga al menos un elemento
+    if (ingredientes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Debe agregar al menos un ingrediente")));
+      return;
+    }
 
     setState(() {
       subiendo = true;
@@ -146,7 +168,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
           ));
         } else {
           request.files
-              .add(await http.MultipartFile.fromPath('rec_img', imagenPath!));
+              .add(await http.MultipartFile.fromPath('imagen', imagenPath!));
         }
       } catch (e) {
         print("Error al adjuntar la imagen: $e");
@@ -171,7 +193,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
         'ingredientes': ingredientes.join(', '),
         'instrucciones': instruccionesController.text,
         'tiempo': tiempoController.text,
-        'imagen': imagenPath ?? '',
+        'rec_img': imagenPath ?? '',
       };
 
       Navigator.pop(context, recetaGuardada);
