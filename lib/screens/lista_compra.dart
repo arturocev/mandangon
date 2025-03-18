@@ -113,6 +113,7 @@ class LCEstado extends State<LCScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     decoration: BoxDecoration(
+                      // ignore: deprecated_member_use
                       color: Colors.white.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(16),
                     ),
