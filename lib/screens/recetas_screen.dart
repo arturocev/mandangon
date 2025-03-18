@@ -23,8 +23,7 @@ class RecetasScreenState extends State<RecetasScreen> {
 
   // Función para obtener recetas desde la base de datos
   Future<void> obtenerRecetas() async {
-    final String url =
-        'http://localhost/obtener_recetas.php'; // Ajusta la URL si es necesario
+    final String url = 'http://localhost/obtener_recetas.php';
     try {
       final response = await http.get(Uri.parse(url));
 

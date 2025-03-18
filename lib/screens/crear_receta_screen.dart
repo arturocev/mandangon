@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -7,8 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
 class CrearRecetaScreen extends StatefulWidget {
-  final Map<String, String>?
-      receta; // Recibe una receta si se está editando una existente
+  final Map<String, String>? receta; // Recibe una receta si se está editando
 
   const CrearRecetaScreen({super.key, this.receta});
 
@@ -17,11 +17,13 @@ class CrearRecetaScreen extends StatefulWidget {
 }
 
 class CrearRecetaScreenState extends State<CrearRecetaScreen> {
-  final _formKey = GlobalKey<FormState>(); // Clave para validar el formulario
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController tituloController;
   late TextEditingController tipoController;
   late TextEditingController instruccionesController;
   late TextEditingController tiempoController;
+  // Para Web usaremos imagenFile; imagenPath se usará para mostrar información
+  XFile? imagenFile;
   String? imagenPath;
   bool subiendo = false;
 
@@ -32,7 +34,6 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
   @override
   void initState() {
     super.initState();
-    // Inicializa los controladores con valores si se está editando una receta existente
     tituloController =
         TextEditingController(text: widget.receta?['titulo'] ?? '');
     tipoController = TextEditingController(text: widget.receta?['tipo'] ?? '');
@@ -42,7 +43,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
         TextEditingController(text: widget.receta?['tiempo'] ?? '');
     imagenPath = widget.receta?['imagen'];
 
-    // Si se está editando y existen ingredientes guardados, convertir la cadena a una lista
+    // Si se está editando y existen ingredientes guardados, convertir la cadena a lista
     if (widget.receta != null &&
         widget.receta?['ingredientes'] != null &&
         widget.receta!['ingredientes']!.isNotEmpty) {
@@ -52,7 +53,6 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
 
   @override
   void dispose() {
-    // Liberar recursos al cerrar la pantalla
     tituloController.dispose();
     tipoController.dispose();
     instruccionesController.dispose();
@@ -61,14 +61,15 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
     super.dispose();
   }
 
-  // Método para seleccionar una imagen desde la galería
+  // Método para seleccionar imagen (compatible con Web)
   Future<void> seleccionarImagen() async {
     final ImagePicker picker = ImagePicker();
     final XFile? imagen = await picker.pickImage(source: ImageSource.gallery);
-
     if (imagen != null) {
       setState(() {
-        imagenPath = imagen.path;
+        imagenFile = imagen;
+        // En Web, usamos el nombre de la imagen para mostrarla (no se puede usar la ruta local)
+        imagenPath = imagen.name;
       });
     }
   }
@@ -77,78 +78,94 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
   Widget mostrarImagen() {
     if (imagenPath == null || imagenPath!.isEmpty) {
       return Center(
-          child: Container(
-        width: 150,
-        height: 150,
-        color: Colors.grey[300],
-        child: Icon(Icons.image,
-            color: const Color.fromARGB(255, 97, 97, 97), size: 100),
-      ));
+        child: Container(
+          width: 150,
+          height: 150,
+          color: Colors.grey[300],
+          child: Icon(Icons.image, color: Colors.white, size: 100),
+        ),
+      );
     }
-
     if (kIsWeb) {
+      // En Web, se muestra el nombre de la imagen o un placeholder
       return Center(
-          child: Image.network(
-        imagenPath!,
-        width: 150,
-        height: 150,
-        fit: BoxFit.contain,
-      ));
+        child: Text(
+          imagenPath!,
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+      );
     } else {
       return Center(
-          child: Image.file(
-        File(imagenPath!),
-        width: 150,
-        height: 150,
-        fit: BoxFit.contain,
-      ));
+        child: Image.file(
+          File(imagenPath!),
+          width: 150,
+          height: 150,
+          fit: BoxFit.contain,
+        ),
+      );
     }
   }
 
+  // Método para guardar la receta usando Multipart (para Web se envía la imagen como bytes)
   Future<void> guardarReceta() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       subiendo = true;
     });
 
-    String? imagenBase64;
-    if (imagenPath != null && !kIsWeb) {
-      List<int> imageBytes = await File(imagenPath!).readAsBytes();
-      imagenBase64 = base64Encode(imageBytes);
-    }
-
-    // Determinar la URL a llamar: si es nueva receta o actualización.
     var url = widget.receta == null
         ? Uri.parse("http://localhost/guardar_receta.php")
         : Uri.parse("http://localhost/actualizar_receta.php");
 
-    // Para el caso de actualización, enviamos el nombre original
-    Map<String, String> body = {
-      'rec_nom': tituloController.text,
-      'rec_tipo_com': tipoController.text,
-      'rec_ing': ingredientes.join(', '),
-      'rec_desc': instruccionesController.text,
-      'rec_tmp': tiempoController.text,
-      'rec_img': imagenBase64 ?? '',
-      'rec_usu': 'usuario_demo' // Si se requiere
-    };
+    var request = http.MultipartRequest('POST', url);
 
-    // Si se trata de una actualización, incluimos el nombre original
+    // Agregar campos de texto
+    request.fields['rec_nom'] = tituloController.text;
+    request.fields['rec_tipo_com'] = tipoController.text;
+    request.fields['rec_ing'] = ingredientes.join(', ');
+    request.fields['rec_desc'] = instruccionesController.text;
+    request.fields['rec_tmp'] = tiempoController.text;
+    request.fields['rec_usu'] = '10';
+
+    // Si se trata de una actualización, se envía el nombre original de la receta
     if (widget.receta != null) {
-      body['rec_nom_original'] = widget.receta!['titulo'] ?? '';
+      request.fields['rec_nom_original'] = widget.receta!['titulo'] ?? '';
     }
 
-    http.Response respuesta = await http.post(url, body: body);
+    // Agregar el archivo de imagen
+    if (imagenFile != null) {
+      try {
+        if (kIsWeb) {
+          // Para Web, leemos los bytes del archivo
+          Uint8List bytes = await imagenFile!.readAsBytes();
+          request.files.add(http.MultipartFile.fromBytes(
+            'rec_img',
+            bytes,
+            filename: imagenFile!.name,
+          ));
+        } else {
+          request.files
+              .add(await http.MultipartFile.fromPath('rec_img', imagenPath!));
+        }
+      } catch (e) {
+        print("Error al adjuntar la imagen: $e");
+      }
+    }
 
-    if (!mounted) return;
+    // Enviar la solicitud
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    print("Respuesta del servidor: ${response.body}");
 
-    if (respuesta.statusCode == 200) {
-      // Si la receta se guarda/actualiza correctamente, se devuelve la información a la pantalla anterior
+    if (response.statusCode == 200) {
+      // Se espera que el servidor retorne un JSON con un mensaje, por ejemplo:
+      // "Imagen subida (BLOB - 123456 bytes) y datos guardados exitosamente."
+      var data = json.decode(response.body);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(data['message'] ?? 'Imagen subida correctamente')));
+
       Map<String, String> recetaGuardada = {
-        // Si actualizamos, podríamos recibir el nuevo nombre; pero si no, se mantiene el original.
         'titulo': tituloController.text,
         'tipo': tipoController.text,
         'ingredientes': ingredientes.join(', '),
@@ -159,10 +176,8 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
 
       Navigator.pop(context, recetaGuardada);
     } else {
-      debugPrint("Error al guardar o actualizar la receta");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar o actualizar la receta')),
-      );
+          SnackBar(content: Text('Error al guardar o actualizar la receta')));
     }
 
     if (!mounted) return;
@@ -181,7 +196,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
     });
   }
 
-  // Método para eliminar un ingrediente de la lista
+  // Método para eliminar un ingrediente
   void eliminarIngrediente(int index) {
     setState(() {
       ingredientes.removeAt(index);
@@ -236,7 +251,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
                     ],
                   ),
                   SizedBox(height: 15),
-                  // Lista de ingredientes
+                  // Campo para agregar ingredientes
                   Row(
                     children: [
                       Expanded(
@@ -253,30 +268,22 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(
-                          Icons.add,
-                          color: Colors.white,
-                        ),
+                        icon: Icon(Icons.add, color: Colors.white),
                         onPressed: agregarIngrediente,
                       ),
                     ],
                   ),
                   SizedBox(height: 10),
-                  // Mostrar lista de ingredientes
+                  // Lista de ingredientes
                   ListView.builder(
                     shrinkWrap: true,
                     itemCount: ingredientes.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text(
-                          ingredientes[index],
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        title: Text(ingredientes[index],
+                            style: TextStyle(color: Colors.white)),
                         trailing: IconButton(
-                          icon: Icon(
-                            Icons.delete,
-                            color: Colors.white,
-                          ),
+                          icon: Icon(Icons.delete, color: Colors.white),
                           onPressed: () => eliminarIngrediente(index),
                         ),
                       );
@@ -328,11 +335,12 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
       maxLines: maxLines,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
-          labelText: label,
-          hintText: hintText,
-          hintStyle: TextStyle(color: Colors.white),
-          labelStyle: TextStyle(color: Colors.white),
-          border: OutlineInputBorder()),
+        labelText: label,
+        hintText: hintText,
+        hintStyle: TextStyle(color: Colors.white),
+        labelStyle: TextStyle(color: Colors.white),
+        border: OutlineInputBorder(),
+      ),
       style: TextStyle(color: Colors.white),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
