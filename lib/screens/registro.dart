@@ -47,7 +47,7 @@ class RegistroEstado extends State<Registro> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 30),
-                    child: const Image(image: AssetImage("assets/logo.png")),
+                    child: const Image(image: AssetImage("assets/logo.png"),width: 300, height: 100),
                   ),
                   campoTexto(
                     controller: controladorNombreCompleto,

@@ -59,9 +59,11 @@ class MainEstado extends State<Main> {
               children: [
                 // Logo Mandangon
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
+                  padding: const EdgeInsets.only(bottom: 0),
                   child: const Image(
                     image: AssetImage("assets/logo.png"),
+                    width: 300.0, // Ancho deseado
+                    height: 150.0, // Alto deseado
                   ),
                 ),
                 // Botón de Iniciar Sesión

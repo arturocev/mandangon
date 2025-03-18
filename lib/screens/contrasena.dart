@@ -85,7 +85,8 @@ class RCEstado extends State<RecuperarContrasena> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text("Correo no encontrado"),
-            content: const Text("No tenemos este correo registrado, por favor regístrate."),
+            content: const Text(
+                "No tenemos este correo registrado, por favor regístrate."),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -133,17 +134,17 @@ class RCEstado extends State<RecuperarContrasena> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text("¡Contraseña restablecida!"),
-            content: const Text("Hemos enviado un mensaje a tu correo con la nueva contraseña."),
+            content: const Text(
+                "Hemos enviado un mensaje a tu correo con la nueva contraseña."),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.pop(context); // Cierra el dialog
                   Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const IniciarSesion()),
-                        ); // Navega al inicio
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const IniciarSesion()),
+                  ); // Navega al inicio
                 },
                 child: const Text("Aceptar"),
               ),
@@ -156,7 +157,8 @@ class RCEstado extends State<RecuperarContrasena> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text("Respuesta incorrecta"),
-            content: const Text("La respuesta no coincide. Inténtalo de nuevo."),
+            content:
+                const Text("La respuesta no coincide. Inténtalo de nuevo."),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -177,12 +179,13 @@ class RCEstado extends State<RecuperarContrasena> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        
         backgroundColor: Colors.transparent, // Hacer la AppBar transparente
         elevation: 0, // Eliminar la sombra
-        iconTheme: const IconThemeData(color: Colors.white), // Hacer que el ícono de atrás sea visible
+        iconTheme: const IconThemeData(
+            color: Colors.white), // Hacer que el ícono de atrás sea visible
       ),
-      extendBodyBehindAppBar: true, // Asegurarse de que el contenido del body se muestre detrás de la AppBar
+      extendBodyBehindAppBar:
+          true, // Asegurarse de que el contenido del body se muestre detrás de la AppBar
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -197,6 +200,10 @@ class RCEstado extends State<RecuperarContrasena> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                const Image(
+                    image: AssetImage("assets/logo.png"),
+                    width: 300,
+                    height: 100),
                 // Campo de texto de email
                 campoTexto(
                   controller: emailController,
@@ -209,7 +216,8 @@ class RCEstado extends State<RecuperarContrasena> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 36, 230, 43),
                     foregroundColor: const Color.fromARGB(255, 10, 56, 1),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
@@ -228,6 +236,10 @@ class RCEstado extends State<RecuperarContrasena> {
                         : pregunta == "pelicula"
                             ? "¿Cuál es tu película favorita?"
                             : "¿Quién es tu famoso favorito?",
+                    style: TextStyle(
+                      fontWeight:
+                          FontWeight.bold, // Esto aplica el estilo en negrita
+                    ),
                   ),
                   const SizedBox(height: 10),
                   // Campo de texto de respuesta
@@ -243,7 +255,8 @@ class RCEstado extends State<RecuperarContrasena> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 5),
                     ),
                     child: const Text(
                       "Confirmar respuesta",

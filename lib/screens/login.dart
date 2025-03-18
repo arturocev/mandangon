@@ -54,8 +54,8 @@ class ISEstado extends State<IniciarSesion>
                 children: [
                   // Logo
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 40),
-                    child: Image.asset("assets/logo.png"),
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: const Image(image: AssetImage("assets/logo.png"),width: 300),
                   ),
 
                   // Campo de texto: Email

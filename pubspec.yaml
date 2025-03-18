@@ -20,6 +20,8 @@ dependencies:
   share_plus: ^10.1.4
   url_launcher: ^6.3.1
   url_launcher_web: ^2.4.0
+  font_awesome_flutter: ^10.7.0
+
 
 
 dev_dependencies:
@@ -34,5 +36,7 @@ flutter:
     - assets/fondo1.png
     - assets/fondo2.png
     - assets/fondo3.png
+
+    - assets/icon_whatsapp.png
 
 
