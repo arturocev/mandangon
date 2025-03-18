@@ -4,6 +4,8 @@ import '../metodos_lc/ordenar_lc.dart';
 import '../metodos_lc/get_lc.dart';
 import '../metodos_lc/aniadir_lc.dart';
 import '../metodos_lc/opciones_lc.dart';
+import '../screens/restaurantes.dart';  
+
 
 class PantallaPrincipal extends StatefulWidget {
   final int usuarioId;
@@ -169,7 +171,15 @@ class PPEstado extends State<PantallaPrincipal> {
               label: "Restaurantes",
             ),
           ],
-          onTap: (index) {},
+          onTap: (index) {
+            if (index == 2) {
+              // Redirige a Restaurantes.dart cuando se presiona el icono de restaurantes
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Restaurantes(usuarioId: widget.usuarioId)),
+              );
+            }
+          },
         ),
       ),
     );
