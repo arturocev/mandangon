@@ -103,8 +103,7 @@ class RecetasScreenState extends State<RecetasScreen> {
 
                 if (eliminada) {
                   setState(() {
-                    recetas.removeAt(
-                        index); // Eliminar la receta de la lista si la API confirma la eliminación
+                    recetas.removeAt(index);
                   });
                 }
               },
@@ -116,7 +115,7 @@ class RecetasScreenState extends State<RecetasScreen> {
     );
   }
 
-// Función que se comunica con el servidor para eliminar una receta por nombre
+  // Función que se comunica con el servidor para eliminar una receta por nombre
   Future<bool> _eliminarRecetaDesdeServidor(String nombreReceta) async {
     final String url = 'http://localhost/eliminar_receta.php';
 
@@ -264,23 +263,21 @@ class RecetasScreenState extends State<RecetasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
-          // Icono de perfil
           IconButton(
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.person, color: Colors.white),
             onPressed: () {
-              // Aquí se debe navegar a la pantalla de perfil
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => PerfilScreen()),
               );
             },
           ),
-          // Icono de configuración
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {
-              // Aquí se debe navegar a la pantalla de configuración
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ConfiguracionScreen()),
@@ -289,38 +286,75 @@ class RecetasScreenState extends State<RecetasScreen> {
           ),
         ],
       ),
-      body: Column(
+      extendBodyBehindAppBar: true, // Para que el fondo ocupe toda la pantalla
+      body: Stack(
         children: [
-          Image.asset('assets/images/logo.png', height: 100),
-          Expanded(
-            child: recetas.isEmpty
-                ? Center(
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/fondoINC.jpg',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: const Color.fromARGB(255, 247, 199, 67),
+                  child: Center(
                     child: Text(
-                      "No hay recetas disponibles",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      "Error al cargar la imagen",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: recetas.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        color: const Color.fromARGB(255, 102, 21, 21),
-                        child: ListTile(
-                          leading: mostrarImagen(recetas[index]['rec_img']),
-                          title: Text(
-                            recetas[index]['titulo']!,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          subtitle: Text(
-                            recetas[index]['tipo']!,
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                          onTap: () => mostrarOpciones(index),
-                        ),
-                      );
-                    },
                   ),
+                );
+              },
+            ),
+          ),
+          // Contenido de la pantalla
+          Column(
+            children: [
+              SizedBox(height: 100), // Espaciado para el logo
+              Image.asset(
+                'assets/images/logo.png',
+                height: 100,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 100,
+                    color: Colors.red,
+                    child: Center(child: Text("Error al cargar logo")),
+                  );
+                },
+              ),
+              Expanded(
+                child: recetas.isEmpty
+                    ? Center(
+                        child: Text(
+                          "No hay recetas disponibles",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: recetas.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            color: const Color.fromARGB(255, 102, 21, 21),
+                            child: ListTile(
+                              leading: mostrarImagen(recetas[index]['rec_img']),
+                              title: Text(
+                                recetas[index]['titulo']!,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                recetas[index]['tipo']!,
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                              onTap: () => mostrarOpciones(index),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           ),
         ],
       ),
