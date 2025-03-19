@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart'; 
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+import 'package:mandangon/metodos_rsn/obtener_rsn.dart';  // Importa la función obtenerResenias
+import 'package:mandangon/metodos_rsn/enviar_rsn.dart';  // Importa la función enviarResenia
+import 'package:mandangon/metodos_rsn/fecha_rsn.dart';   // Importa la función formatearFecha
 
 class Resenias extends StatefulWidget {
   final int restId;
@@ -23,54 +23,32 @@ class ReseniasEstado extends State<Resenias> {
   @override
   void initState() {
     super.initState();
-    obtenerResenias();
+    obtenerReseniasData();
   }
 
-  Future<void> obtenerResenias() async {
-    final response = await http.get(Uri.parse(
-        'http://localhost/mandangon/obtener_resenias.php?rest_id=${widget.restId}'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-
-      setState(() {
-        resenias = data['resenias'] ?? [];
-        puntuacionMedia = data['media']?.toDouble() ?? 0.0;
-      });
-    } else {
-      if (kDebugMode) {
-        print('Error al obtener reseñas');
-      }
-    }
-  }
-
-  Future<void> enviarResenia() async {
-    final response = await http.post(
-      Uri.parse('http://localhost/mandangon/insertar_resenias.php'),
-      body: {
-        'usuarioId': widget.usuarioId.toString(),
-        'restauranteId': widget.restId.toString(),
-        'descripcion': comentarioController.text,
-        'calificacion': puntuacion.toString(),
-      },
-    );
-
-    if (response.statusCode == 200) {
-      await obtenerResenias();
-      comentarioController.clear();
-    } else {
-      if (kDebugMode) {
-        print('Error al añadir la reseña');
-      }
-    }
-  }
-
-  String formatearFecha(String fechaOriginal) {
+  Future<void> obtenerReseniasData() async {
     try {
-      DateTime fecha = DateTime.parse(fechaOriginal);
-      return DateFormat('dd/MM/yyyy').format(fecha);
+      final data = await obtenerResenias(widget.restId);
+      setState(() {
+        resenias = data['resenias'];
+        puntuacionMedia = data['media'];
+      });
     } catch (e) {
-      return fechaOriginal;
+      if (kDebugMode) {
+        print('Error al obtener reseñas: $e');
+      }
+    }
+  }
+
+  Future<void> enviarReseniaData() async {
+    try {
+      await enviarResenia(widget.usuarioId, widget.restId, comentarioController.text, puntuacion);
+      await obtenerReseniasData();
+      comentarioController.clear();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error al añadir la reseña: $e');
+      }
     }
   }
 
@@ -86,10 +64,9 @@ class ReseniasEstado extends State<Resenias> {
       body: Container(
         decoration: BoxDecoration(
           image: const DecorationImage(
-            image: AssetImage('assets/fondo1.png'), // Usa el mismo fondo
+            image: AssetImage('assets/fondo1.png'), 
             fit: BoxFit.cover,
           ),
-          // ignore: deprecated_member_use
           color: Colors.white.withOpacity(0.9),
         ),
         child: SafeArea(
@@ -131,7 +108,6 @@ class ReseniasEstado extends State<Resenias> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      // ignore: deprecated_member_use
                       color: Colors.white.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -146,16 +122,14 @@ class ReseniasEstado extends State<Resenias> {
                             itemBuilder: (context, index) {
                               final res = resenias[index];
                               return ListTile(
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 tileColor: Colors.orange[50],
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 title: Text(
                                   res['usu_nombre'],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 16),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,16 +139,13 @@ class ReseniasEstado extends State<Resenias> {
                                     const SizedBox(height: 6),
                                     Row(
                                       children: [
-                                        Icon(Icons.star,
-                                            color: Colors.amber[700], size: 18),
+                                        Icon(Icons.star, color: Colors.amber[700], size: 18),
                                         const SizedBox(width: 4),
                                         Text('${res['res_cali']}'),
                                         const Spacer(),
                                         Text(
                                           formatearFecha(res['res_fecha']),
-                                          style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 12),
+                                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
                                         ),
                                       ],
                                     ),
@@ -191,7 +162,6 @@ class ReseniasEstado extends State<Resenias> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
                     color: Colors.white.withOpacity(0.85),
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -226,7 +196,7 @@ class ReseniasEstado extends State<Resenias> {
                           ),
                           const Spacer(),
                           ElevatedButton.icon(
-                            onPressed: enviarResenia,
+                            onPressed: enviarReseniaData,
                             icon: const Icon(Icons.send, color: Colors.black),
                             label: const Text("Enviar", style: TextStyle(color: Colors.black)),
                             style: ElevatedButton.styleFrom(

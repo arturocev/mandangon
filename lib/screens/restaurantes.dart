@@ -1,7 +1,7 @@
+// lib/restaurantes/restaurantes.dart
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'dart:math';
-import 'package:http/http.dart' as http;
+import 'package:mandangon/metodos_rest/buscar_rest.dart'; // Importa el archivo de compartir_rest.dart
+import 'package:mandangon/metodos_rest/obtener_rest.dart'; // Importa el archivo de compartir_rest.dart
 import 'restaurante_card.dart';
 
 class Restaurantes extends StatefulWidget {
@@ -21,40 +21,7 @@ class RestEstado extends State<Restaurantes> {
   @override
   void initState() {
     super.initState();
-    obtenerRestaurantes();
-  }
-
-  Future<void> obtenerRestaurantes() async {
-    final response = await http
-        .get(Uri.parse('http://localhost/mandangon/obtener_restaurantes.php'));
-    if (response.statusCode == 200) {
-      setState(() {
-        todosRestaurantes = json.decode(response.body);
-        listaVisible = obtenerAleatorios(todosRestaurantes, 10);
-      });
-    } else {
-      throw Exception('Fallo al cargar restaurantes');
-    }
-  }
-
-  List<dynamic> obtenerAleatorios(List<dynamic> lista, int cantidad) {
-    lista.shuffle(Random());
-    return lista.take(cantidad).toList();
-  }
-
-  void buscarRestaurantes(String query) {
-    final resultados = todosRestaurantes.where((rest) {
-      final nombre = rest['rest_nom'].toString().toLowerCase();
-      final tipo = rest['rest_tipo_com'].toString().toLowerCase();
-      final ubicacion = rest['rest_ubi'].toString().toLowerCase();
-      final q = query.toLowerCase();
-      return nombre.contains(q) || tipo.contains(q) || ubicacion.contains(q);
-    }).toList();
-
-    setState(() {
-      listaVisible =
-          query.isEmpty ? obtenerAleatorios(todosRestaurantes, 10) : resultados;
-    });
+    obtenerRestaurantes(setState, todosRestaurantes, listaVisible);  // Llamamos a la función para obtener los restaurantes
   }
 
   @override
@@ -76,7 +43,7 @@ class RestEstado extends State<Restaurantes> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/fondo1.png'), // Mismo fondo bonito
+            image: AssetImage('assets/fondo1.png'), // Fondo bonito
             fit: BoxFit.cover,
           ),
         ),
@@ -96,7 +63,9 @@ class RestEstado extends State<Restaurantes> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onChanged: buscarRestaurantes,
+                  onChanged: (query) {
+                    buscarRestaurantes(query, todosRestaurantes, setState, listaVisible);
+                  },
                 ),
               ),
               Expanded(
@@ -106,15 +75,12 @@ class RestEstado extends State<Restaurantes> {
                         itemCount: listaVisible.length,
                         itemBuilder: (context, index) {
                           final restaurante = listaVisible[index];
-                          // Separar tipos de comida con espacio después de la coma
                           String tipoComida = restaurante['rest_tipo_com'] ?? '';
                           tipoComida = tipoComida.split(',').join(', ');  // Añadir espacio después de cada coma
                           
                           return Card(
-                            // ignore: deprecated_member_use
                             color: Colors.white.withOpacity(0.85),
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
+                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -124,8 +90,7 @@ class RestEstado extends State<Restaurantes> {
                                 restaurante['rest_nom'],
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              subtitle: Text(
-                                  '$tipoComida - ${restaurante['rest_ubi']}'),
+                              subtitle: Text('$tipoComida - ${restaurante['rest_ubi']}'),
                               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                               onTap: () {
                                 Navigator.push(
