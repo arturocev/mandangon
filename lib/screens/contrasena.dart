@@ -52,6 +52,10 @@ class RCEstado extends State<RecuperarContrasena> {
     );
   }
 
+  // InputFormatter para aceptar solo letras minúsculas
+  TextInputFormatter soloLetrasMinusculas =
+      FilteringTextInputFormatter.allow(RegExp(r'[a-z]'));
+
   Future<void> verificarCorreo() async {
     if (kDebugMode) {
       print("Enviando solicitud para verificar correo...");
@@ -242,10 +246,20 @@ class RCEstado extends State<RecuperarContrasena> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // Campo de texto de respuesta
+                  // Campo de texto de respuesta con el filtro para solo letras minúsculas
                   campoTexto(
                     controller: respuestaController,
                     labelText: "Respuesta",
+                    formatter: [soloLetrasMinusculas], // Solo letras minúsculas
+                  ),
+                  const SizedBox(height: 5),
+                  // Frase en rojo debajo del campo de respuesta
+                  Text(
+                    "* Solo minúsculas",
+                    style: TextStyle(
+                      color: Colors.red, // Color rojo
+                      fontSize: 14, // Tamaño de fuente pequeño
+                    ),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(

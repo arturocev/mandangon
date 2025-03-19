@@ -1,19 +1,22 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'package:intl/intl.dart';
 
 class Resenias extends StatefulWidget {
   final int restId;
-  final int usuarioId; 
+  final int usuarioId;
 
   const Resenias({super.key, required this.restId, required this.usuarioId});
+
   @override
   ReseniasEstado createState() => ReseniasEstado();
 }
 
 class ReseniasEstado extends State<Resenias> {
   List<dynamic> resenias = [];
+  double puntuacionMedia = 0.0;
   TextEditingController comentarioController = TextEditingController();
   int puntuacion = 3;
 
@@ -26,85 +29,223 @@ class ReseniasEstado extends State<Resenias> {
   Future<void> obtenerResenias() async {
     final response = await http.get(Uri.parse(
         'http://localhost/mandangon/obtener_resenias.php?rest_id=${widget.restId}'));
+
     if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
       setState(() {
-        resenias = json.decode(response.body);
+        resenias = data['resenias'] ?? [];
+        puntuacionMedia = data['media']?.toDouble() ?? 0.0;
       });
+    } else {
+      if (kDebugMode) {
+        print('Error al obtener reseñas');
+      }
     }
   }
 
+  Future<void> enviarResenia() async {
+    final response = await http.post(
+      Uri.parse('http://localhost/mandangon/insertar_resenias.php'),
+      body: {
+        'usuarioId': widget.usuarioId.toString(),
+        'restauranteId': widget.restId.toString(),
+        'descripcion': comentarioController.text,
+        'calificacion': puntuacion.toString(),
+      },
+    );
 
-Future<void> enviarResenia() async {
-  final response = await http.post(
-    Uri.parse('http://localhost/mandangon/insertar_resenias.php'),
-    body: {
-      'usuarioId': widget.usuarioId.toString(), 
-      'restauranteId': widget.restId.toString(),
-      'descripcion': comentarioController.text,
-      'calificacion': puntuacion.toString(),
-    },
-  );
-
-  if (response.statusCode == 200) {
-    print('Reseña añadida correctamente');
-    obtenerResenias(); // recargar para que aparezca
-    comentarioController.clear();
-  } else {
-    print('Error al añadir la reseña');
+    if (response.statusCode == 200) {
+      await obtenerResenias();
+      comentarioController.clear();
+    } else {
+      if (kDebugMode) {
+        print('Error al añadir la reseña');
+      }
+    }
   }
-}
 
-@override
+  String formatearFecha(String fechaOriginal) {
+    try {
+      DateTime fecha = DateTime.parse(fechaOriginal);
+      return DateFormat('dd/MM/yyyy').format(fecha);
+    } catch (e) {
+      return fechaOriginal;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Reseñas")),
-      body: Column(
-        children: [
-          Expanded(
-            child: resenias.isEmpty
-                ? const Center(child: Text("No hay reseñas aún"))
-                : ListView.builder(
-                    itemCount: resenias.length,
-                    itemBuilder: (context, index) {
-                      final res = resenias[index];
-                      return ListTile(
-                        title: Text(res['res_desc']),
-                        subtitle: Text('Puntuación: ${res['res_cali']} ⭐️'),
-                      );
-                    },
-                  ),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: const DecorationImage(
+            image: AssetImage('assets/fondo1.png'), // Usa el mismo fondo
+            fit: BoxFit.cover,
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
+          // ignore: deprecated_member_use
+          color: Colors.white.withOpacity(0.9),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
-                  controller: comentarioController,
-                  decoration:
-                      const InputDecoration(labelText: "Escribe tu reseña"),
+                // Puntuación media destacada
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Puntuación Media',
+                        style: TextStyle(fontSize: 18, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '$puntuacionMedia ⭐️',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepOrange,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Row(
-                  children: [
-                    const Text("Puntuación: "),
-                    DropdownButton<int>(
-                      value: puntuacion,
-                      items: [1, 2, 3, 4, 5]
-                          .map((e) => DropdownMenuItem(
-                              child: Text(e.toString()), value: e))
-                          .toList(),
-                      onChanged: (val) => setState(() => puntuacion = val!),
+                const SizedBox(height: 20),
+
+                // Lista de reseñas
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      // ignore: deprecated_member_use
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: enviarResenia,
-                      child: const Text("Enviar"),
-                    )
-                  ],
-                )
+                    child: resenias.isEmpty
+                        ? const Center(child: Text("No hay reseñas aún"))
+                        : ListView.separated(
+                            itemCount: resenias.length,
+                            separatorBuilder: (context, index) => Divider(
+                              color: const Color.fromARGB(255, 103, 169, 255),
+                              thickness: 1,
+                            ),
+                            itemBuilder: (context, index) {
+                              final res = resenias[index];
+                              return ListTile(
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                tileColor: Colors.orange[50],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                title: Text(
+                                  res['usu_nombre'],
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 4),
+                                    Text(res['res_desc']),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.star,
+                                            color: Colors.amber[700], size: 18),
+                                        const SizedBox(width: 4),
+                                        Text('${res['res_cali']}'),
+                                        const Spacer(),
+                                        Text(
+                                          formatearFecha(res['res_fecha']),
+                                          style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Campo para agregar reseña
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
+                    color: Colors.white.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: comentarioController,
+                        decoration: InputDecoration(
+                          labelText: "Escribe tu reseña",
+                          filled: true,
+                          fillColor: Colors.orange[50],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          const Text("Puntuación: "),
+                          DropdownButton<int>(
+                            value: puntuacion,
+                            items: [1, 2, 3, 4, 5]
+                                .map((e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(e.toString()),
+                                    ))
+                                .toList(),
+                            onChanged: (val) =>
+                                setState(() => puntuacion = val!),
+                          ),
+                          const Spacer(),
+                          ElevatedButton.icon(
+                            onPressed: enviarResenia,
+                            icon: const Icon(Icons.send, color: Colors.black),
+                            label: const Text("Enviar", style: TextStyle(color: Colors.black)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(255, 80, 255, 220),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

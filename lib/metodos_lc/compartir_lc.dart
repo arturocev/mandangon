@@ -6,7 +6,13 @@ void mostrarOpcionesCompartir(
     BuildContext context, Map<String, dynamic> lista) {
   String titulo = "*${lista["nombre"]}*";
   List<dynamic> productos = lista["productos"] ?? [];
+  
+  // Crear el contenido de la lista
   String contenido = "$titulo\n\n${productos.map((p) => "• $p").join("\n")}";
+
+  // Crear el mensaje completo con la introducción
+  final mensajeCompleto =
+      '¡Hola! Te comparto mi lista de compras:\n\n$contenido\n\nEnviado desde la app Mandangon';
 
   showModalBottomSheet(
     context: context,
@@ -15,20 +21,18 @@ void mostrarOpcionesCompartir(
         child: Wrap(
           children: <Widget>[
             ListTile(
-              leading: Image.asset('assets/icon_whatsapp.png', width: 24, height: 24),
+              leading: const Icon(Icons.message),
               title: const Text('Compartir por WhatsApp'),
               onTap: () async {
                 final Uri whatsappUrl = Uri.parse(
-                    "https://wa.me/?text=${Uri.encodeComponent(contenido)}");
+                    "https://wa.me/?text=${Uri.encodeComponent(mensajeCompleto)}");
                 if (await canLaunchUrl(whatsappUrl)) {
                   await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
                 } else {
-                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('No se pudo abrir WhatsApp')),
                   );
                 }
-                // ignore: use_build_context_synchronously
                 Navigator.pop(context); // Cierra el diálogo
               },
             ),
@@ -36,27 +40,24 @@ void mostrarOpcionesCompartir(
               leading: const Icon(Icons.email),
               title: const Text('Compartir por Correo'),
               onTap: () async {
+                final cuerpoCorreo = mensajeCompleto;
                 final Uri emailUrl = Uri.parse(
-                    "mailto:?subject=Lista de Compra&body=$contenido");
+                    "mailto:?subject=Lista de Compra&body=${Uri.encodeComponent(cuerpoCorreo)}");
                 if (await canLaunchUrl(emailUrl)) {
                   await launchUrl(emailUrl);
                 }
-                // ignore: use_build_context_synchronously
-                Navigator.pop(context);
+                Navigator.pop(context); // Cierra el diálogo
               },
             ),
             ListTile(
               leading: const Icon(Icons.copy),
               title: const Text('Copiar al Portapapeles'),
               onTap: () async {
-                await Clipboard.setData(ClipboardData(text: contenido));
-                // ignore: use_build_context_synchronously
+                await Clipboard.setData(ClipboardData(text: mensajeCompleto));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text("Texto copiado al portapapeles")),
+                  const SnackBar(content: Text("Texto copiado al portapapeles")),
                 );
-                // ignore: use_build_context_synchronously
-                Navigator.pop(context);
+                Navigator.pop(context); // Cierra el diálogo
               },
             ),
           ],
