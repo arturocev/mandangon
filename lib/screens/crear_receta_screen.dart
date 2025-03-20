@@ -17,7 +17,7 @@ class CrearRecetaScreen extends StatefulWidget {
 }
 
 class CrearRecetaScreenState extends State<CrearRecetaScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
   late TextEditingController tituloController;
   late TextEditingController tipoController;
   late TextEditingController instruccionesController;
@@ -116,7 +116,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
 
   // Método para guardar la receta usando Multipart (para Web se envía la imagen como bytes)
   Future<void> guardarReceta() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!formKey.currentState!.validate()) return;
 
     // Validar que se haya seleccionado una imagen
     if (imagenFile == null && (imagenPath == null || imagenPath!.isEmpty)) {
@@ -242,7 +242,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
-              key: _formKey,
+              key: formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -255,7 +255,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
                     ),
                   ),
                   SizedBox(height: 20),
-                  _campoTexto(
+                  campoTexto(
                     label: "Título",
                     controller: tituloController,
                     hintText: "Ejemplo: Tarta de chocolate",
@@ -264,7 +264,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
                     ],
                   ),
                   SizedBox(height: 15),
-                  _campoTexto(
+                  campoTexto(
                     label: "Tipo de comida",
                     controller: tipoController,
                     hintText: "Ejemplo: Postre",
@@ -312,14 +312,14 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
                     },
                   ),
                   SizedBox(height: 15),
-                  _campoTexto(
+                  campoTexto(
                     label: "Instrucciones",
                     controller: instruccionesController,
                     hintText: "Escribe los pasos de la receta...",
                     maxLines: 5,
                   ),
                   SizedBox(height: 15),
-                  _campoTexto(
+                  campoTexto(
                     label: "Tiempo estimado (minutos)",
                     controller: tiempoController,
                     hintText: "Ejemplo: 30",
@@ -345,7 +345,7 @@ class CrearRecetaScreenState extends State<CrearRecetaScreen> {
     );
   }
 
-  Widget _campoTexto({
+  Widget campoTexto({
     required String label,
     required TextEditingController controller,
     required String hintText,

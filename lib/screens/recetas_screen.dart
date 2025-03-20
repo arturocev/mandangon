@@ -19,22 +19,20 @@ class RecetasScreenState extends State<RecetasScreen> {
   @override
   void initState() {
     super.initState();
+    obtenerRecetas();
   }
 
-  // Función para obtener recetas desde la base de datos
   Future<void> obtenerRecetas() async {
-    final String url = 'http://localhost/obtener_recetas.php';
+    final int usuarioId = 10;
+    final String url =
+        'http://localhost/obtener_recetas.php?usuario_id=$usuarioId';
     try {
       final response = await http.get(Uri.parse(url));
-
       if (response.statusCode == 200) {
-        // Se espera una lista de recetas en JSON
         List<dynamic> datos = json.decode(response.body);
-
         setState(() {
           recetas = datos
               .map((receta) {
-                // Mapea cada receta del JSON a un Map<String, String> que use los mismos keys que usas en la UI
                 return {
                   'id_rec': receta['id_rec'].toString(),
                   'titulo': receta['rec_nom'] ?? '',
@@ -42,11 +40,13 @@ class RecetasScreenState extends State<RecetasScreen> {
                   'ingredientes': receta['rec_ing'] ?? '',
                   'instrucciones': receta['rec_desc'] ?? '',
                   'tiempo': receta['rec_tmp'] ?? '',
-                  'imagen': receta['rec_img'] ?? '',
+                  'rec_img': receta['rec_img'] ?? '',
                 };
               })
               .toList()
-              .cast<Map<String, String>>();
+              .map<Map<String, String>>(
+                  (element) => Map<String, String>.from(element))
+              .toList();
         });
       } else {
         print("Error al obtener recetas: ${response.statusCode}");
@@ -99,7 +99,7 @@ class RecetasScreenState extends State<RecetasScreen> {
 
                 // Llamar a la API para eliminar la receta usando el nombre
                 bool eliminada =
-                    await _eliminarRecetaDesdeServidor(nombreReceta);
+                    await eliminarRecetaDesdeServidor(nombreReceta);
 
                 if (eliminada) {
                   setState(() {
@@ -116,7 +116,7 @@ class RecetasScreenState extends State<RecetasScreen> {
   }
 
   // Función que se comunica con el servidor para eliminar una receta por nombre
-  Future<bool> _eliminarRecetaDesdeServidor(String nombreReceta) async {
+  Future<bool> eliminarRecetaDesdeServidor(String nombreReceta) async {
     final String url = 'http://localhost/eliminar_receta.php';
 
     try {
@@ -247,9 +247,15 @@ class RecetasScreenState extends State<RecetasScreen> {
       );
     }
 
-    // Si 'path' no es una URL completa, se asume que es el nombre del archivo y se construye la URL.
-    String imageUrl =
-        path.startsWith("http") ? path : "http://localhost/uploads/$path";
+    String baseUrl = "http://localhost/";
+    String imageUrl;
+    if (path.startsWith("http")) {
+      imageUrl = path;
+    } else if (path.startsWith("uploads/")) {
+      imageUrl = baseUrl + path;
+    } else {
+      imageUrl = baseUrl + "uploads/" + path;
+    }
 
     if (kIsWeb) {
       return Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover);

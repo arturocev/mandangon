@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'screens/navigation_wrapper.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MandangonApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MandangonApp extends StatelessWidget {
+  const MandangonApp({super.key});
 
   @override
   Widget build(BuildContext context) {
