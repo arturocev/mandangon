@@ -113,7 +113,7 @@ class MainEstado extends State<Main> {
                       ),
                     ),
                     backgroundColor: const Color.fromARGB(255, 80, 255, 220),
-                    heroTag: "btn2",
+                    heroTag: "btn3",
                   ),
                 ),
               ],
