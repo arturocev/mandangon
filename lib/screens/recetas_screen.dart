@@ -206,25 +206,26 @@ class RecetasScreenState extends State<RecetasScreen> {
     }
   }
 
-  // Función para ver la descripción de una receta
   void verDescripcion(int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(recetas[index]['titulo']!),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Tipo: ${recetas[index]['tipo']}"),
-              SizedBox(height: 10),
-              Text("Ingredientes: ${recetas[index]['ingredientes']}"),
-              SizedBox(height: 10),
-              Text("Instrucciones: ${recetas[index]['instrucciones']}"),
-              SizedBox(height: 10),
-              Text("Tiempo estimado: ${recetas[index]['tiempo']}"),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Tipo: ${recetas[index]['tipo']}"),
+                SizedBox(height: 10),
+                Text("Ingredientes: ${recetas[index]['ingredientes']}"),
+                SizedBox(height: 10),
+                Text("Instrucciones: ${recetas[index]['instrucciones']}"),
+                SizedBox(height: 10),
+                Text("Tiempo estimado: ${recetas[index]['tiempo']}"),
+              ],
+            ),
           ),
           actions: [
             TextButton(
