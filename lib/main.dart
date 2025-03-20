@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:mandangon/screens/login.dart';
 import 'package:mandangon/screens/registro.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'metodos_lr/firebase_options.dart';
+=======
+import 'restaurantes.dart'; // Importa la pantalla de restaurantes
+>>>>>>> origin/main
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +48,7 @@ class Main extends StatefulWidget {
   State<Main> createState() => MainEstado();
 }
 
+<<<<<<< HEAD
 class MainEstado extends State<Main> {
   @override
   Widget build(BuildContext context) {
@@ -56,6 +61,34 @@ class MainEstado extends State<Main> {
               "assets/fondo1.png",
               fit: BoxFit.cover, // Ajusta la imagen al tamaño de la pantalla
             ),
+=======
+class _MyHomePageState extends State<MyHomePage> {
+  int _selectedIndex = 0; // Índice para controlar la navegación
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 2) {
+      // Si se presiona "Restaurantes"
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RestaurantesScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Inicio",
+>>>>>>> origin/main
           ),
           // Contenido principal
           Center(
@@ -120,6 +153,10 @@ class MainEstado extends State<Main> {
             ),
           ),
         ],
+<<<<<<< HEAD
+=======
+        onTap: _onItemTapped,
+>>>>>>> origin/main
       ),
     );
   }
