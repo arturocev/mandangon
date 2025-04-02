@@ -33,7 +33,8 @@ class AgregarUsuario {
           // ignore: use_build_context_synchronously
           mensaje(context, "Error", data["mensaje"]);
         } else {
-          mensaje(
+          if (contrasenia != "") {
+            mensaje(
             // ignore: use_build_context_synchronously
             context,
             "Cuenta Creada",
@@ -46,6 +47,7 @@ class AgregarUsuario {
               );
             },
           );
+          }
         }
       } else {
         // ignore: use_build_context_synchronously

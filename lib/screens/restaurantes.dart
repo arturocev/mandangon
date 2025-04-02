@@ -36,7 +36,7 @@ class RestEstado extends State<Restaurantes> {
         actions: [
           IconButton(
             icon: const Icon(Icons.map, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {}
           ),
         ],
       ),
