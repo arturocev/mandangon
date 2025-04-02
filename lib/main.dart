@@ -94,7 +94,7 @@ class MainEstado extends State<Main> {
                     heroTag: "btn1",
                   ),
                 ),
-                // Botón de Registro
+                // Boton de Registro
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
                   child: FloatingActionButton.extended(
